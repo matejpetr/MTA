@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+String* parseGET(String queryString);
+
 #include <DHT.h>
 #define DHTPIN 1
 #define DHTTYPE DHT11 
@@ -14,34 +16,45 @@ void setup() {
 
 void loop() {
 
-  static int sensorID = 0;
+  int sensorID = 0;
 
   delay(1000);
 
   // CMD Parser
+  
+  // Příklad GET dotazu
+  String exampleQuery = "type=dht11&resolution=0.1";
+
+  // Parsování příkladu
+  String* result = parseGET(exampleQuery);
+
+  // Zobrazení výsledného pole
+  //Serial.println("--- Parsed Parameters ---");
+  //Serial.println("Type: "       + result[0]);
+  //Serial.println("SensorID: "   + result[1]);
+  //Serial.println("Resolution: " + result[2]);
 
   // Call of specific sensor
+  sensorID = result[1].toInt();
+
+  // TESTING //
+  // sensorID = 0;
   switch (sensorID) {
     case 0: // Sensor: 
-      Serial.println("M-TA: Sensor " + String(sensorID) + " output is ...");
       Sensosr_DHT11();
       break;
     case 1: // Sensor:
-      Serial.println("M-TA: Sensor " + String(sensorID) + " output is ...");
       break;
     case 2: // Sensor:
-      Serial.println("M-TA: Sensor " + String(sensorID) + " output is ...");
       break;
     case 3: // Sensor:
-      Serial.println("M-TA: Sensor " + String(sensorID) + " output is ...");
       break;
     default: // If the command is not recognized, do nothing
-      Serial.println("M-TA: Sensor " + String(sensorID) + " NOT supported!");
+      Serial.println("?id=" + String(sensorID) + "&message=NotSupported");
       sensorID = -1;
       break;
   }
 
-  sensorID++;
 }
 
 void Sensosr_DHT11()
@@ -53,7 +66,7 @@ void Sensosr_DHT11()
   // Read temperature as Fahrenheit (isFahrenheit = true)
   float f = dht.readTemperature(true);
   if (isnan(h) || isnan(t) || isnan(f)) {
-    Serial.println(F("Failed to read from DHT sensor!"));
+    Serial.println(F("?type=dht11&id=2&temp=nan&humi=nan"));
     return;
   }
   // Compute heat index in Fahrenheit (the default)
@@ -61,15 +74,50 @@ void Sensosr_DHT11()
   // Compute heat index in Celsius (isFahreheit = false)
   float hic = dht.computeHeatIndex(t, h, false);
   
-  Serial.print(F("Humidity: "));
+  Serial.print(F("?type=dht11&id=2&humi="));
   Serial.print(h);
-  Serial.print(F("%  Temperature: "));
+  Serial.print(F("&temp="));
   Serial.print(t);
-  Serial.print(F("°C "));
-  Serial.print(f);
-  Serial.print(F("°F  Heat index: "));
-  Serial.print(hic);
-  Serial.print(F("°C "));
-  Serial.print(hif);
-  Serial.println(F("°F"));
 }
+
+
+// Funkce pro parsování GET dotazu
+String* parseGET(String queryString) {
+  static String values[3]; // Pole pro ukládání hodnot: type, temp, humi
+
+  // Inicializace prázdných hodnot
+  values[0] = ""; // type
+  values[1] = ""; // id
+  values[2] = ""; // resolution
+
+  // Rozdělení na jednotlivé klíč=hodnota páry
+  int start = 0;
+  while (start < queryString.length()) {
+    int end = queryString.indexOf('&', start);
+    if (end == -1) {
+      end = queryString.length();
+    }
+
+    String pair = queryString.substring(start, end);
+    int delimiter = pair.indexOf('=');
+
+    if (delimiter != -1) {
+      String key = pair.substring(0, delimiter);
+      String value = pair.substring(delimiter + 1);
+
+      // Uložení hodnot na základě klíče
+      if (key == "type") {
+        values[0] = value;
+      } else if (key == "id") {
+        values[1] = value;
+      } else if (key == "resolution") {
+        values[2] = value;
+      }
+    }
+
+    start = end + 1;
+  }
+
+  return values;
+}
+
