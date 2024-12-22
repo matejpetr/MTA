@@ -15,6 +15,10 @@ void Sensosr_DS11B20();
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
+void Sensosr_AnalogRead(int pinNo);
+
+void Sensosr_DigitalRead(int pinNo);
+
 
 
 void setup() {
@@ -25,11 +29,15 @@ void setup() {
 void loop() {
 
   int sensorID = 0;
+  int pinNo = 0;
 
   delay(1000);
 
   // Příklad GET dotazu
-  String exampleQuery = "type=dht11&id=0&resolution=0.1";
+  //String exampleQuery = "type=dht11&id=0";
+  //String exampleQuery = "type=ds18b20&id=1";
+  //String exampleQuery = "type=DigitalRead&id=100&pinNo=5;";
+  String exampleQuery = "type=AnalogRead&id=200&pinNo=5;";
 
   // Parsování příkladu
   String* result = parseGET(exampleQuery);
@@ -39,11 +47,11 @@ void loop() {
   //Serial.println("Type: "       + result[0]);
   //Serial.println("SensorID: "   + result[1]);
   //Serial.println("Resolution: " + result[2]);
+  //Serial.println("pinNo: "      + result[3]);
 
   // Call of specific sensor
-  sensorID = result[1].toInt();
-
-  sensorID = 1;
+  sensorID = result[1].toInt(); // SensorID
+  pinNo    = result[3].toInt(); // pinNo
 
   switch (sensorID) {
     case 0: // Sensor: 
@@ -56,12 +64,33 @@ void loop() {
       break;
     case 3: // Sensor:
       break;
+    case 100: // Universal Diagital Input Read; type=DigitalRead&id=100&pinNo=x;
+      Sensosr_DigitalRead(pinNo);
+      break;
+    case 200: // Universal Analog input Read; type=AnalogRead&id=100&pinNo=x;
+      Sensosr_AnalogRead(pinNo);
+      break;
     default: // If the command is not recognized, do nothing
       Serial.println("?id=" + String(sensorID) + "&message=NotSupported");
       sensorID = -1;
       break;
   }
 
+}
+
+void Sensosr_AnalogRead(int analogPin)
+{
+  int analogValue = analogRead(analogPin);
+  Serial.print(F("?type=AnalogRead&id=100&value="));
+  Serial.println(analogValue);
+}
+
+void Sensosr_DigitalRead(int digitalPin)
+{
+  pinMode(digitalPin, INPUT);
+  int digitalValue = digitalRead(digitalPin);
+  Serial.print(F("?type=DigitalRead&id=200&value="));
+  Serial.println(digitalValue);
 }
 
 void Sensosr_DS11B20()
@@ -74,21 +103,11 @@ void Sensosr_DS11B20()
 
 void Sensosr_DHT11()
 {
-  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   float h = dht.readHumidity();
-  // Read temperature as Celsius (the default)
   float t = dht.readTemperature();
-  // Read temperature as Fahrenheit (isFahrenheit = true)
-  //float f = dht.readTemperature(true);
-  //if (isnan(h) || isnan(t) || isnan(f)) {
-  //  Serial.println(F("?type=dht11&id=2&temp=nan&humi=nan"));
-    //return;
-  //}
-  // Compute heat index in Fahrenheit (the default)
-  //float hif = dht.computeHeatIndex(f, h);
-  // Compute heat index in Celsius (isFahreheit = false)
-  //float hic = dht.computeHeatIndex(t, h, false);
-  
+  //float f = dht.readTemperature(true); // Read temperature as Fahrenheit (isFahrenheit = true)
+  //float hif = dht.computeHeatIndex(f, h); // Compute heat index in Fahrenheit (the default)
+  //float hic = dht.computeHeatIndex(t, h, false); // Compute heat index in Celsius (isFahreheit = false)
   Serial.print(F("?type=dht11&id=0&humi="));
   Serial.print(h);
   Serial.print(F("&temp="));
@@ -98,7 +117,7 @@ void Sensosr_DHT11()
 
 // Funkce pro parsování GET dotazu
 String* parseGET(String queryString) {
-  static String values[3]; // Pole pro ukládání hodnot: type, temp, humi
+  static String values[50]; // Pole pro ukládání hodnot: type, temp, humi
 
   // Inicializace prázdných hodnot
   values[0] = ""; // type
@@ -127,6 +146,8 @@ String* parseGET(String queryString) {
         values[1] = value;
       } else if (key == "resolution") {
         values[2] = value;
+      } else if (key == "pinNo") {
+        values[3] = value;
       }
     }
 
