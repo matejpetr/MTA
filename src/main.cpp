@@ -4,40 +4,45 @@
 
 String* parseGET(String queryString);
 
-void Sensosr_DHT11();
-#include <DHT.h>
-#define DHTPIN 1
-#define DHTTYPE DHT11 
-DHT dht(DHTPIN, DHTTYPE);
+void Sensor_DHT11();
+#include <dht11.h>
+DHT11 dht11(1);
 
-void Sensosr_DS11B20();
+void Sensor_DS11B20();
 #define ONE_WIRE_BUS 2  // Pin pro připojení datového vodiče senzoru
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
-void Sensosr_AnalogRead(int pinNo);
+void Sensor_AnalogRead(int pinNo);
 
-void Sensosr_DigitalRead(int pinNo);
+void Sensor_DigitalRead(int pinNo);
 
+void Specific_Sensor_AnalogRead(int analogPin, String typeOfSensor,int sensorID);
+
+void Specific_Sensor_DigitalRead(int digitalPin, String typeOfSensor,int sensorID);
 
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("M-TA: Sensor borad ready!");
+  Serial.println("M-TA: Sensor board ready!");
 }
 
 void loop() {
 
   int sensorID = 0;
   int pinNo = 0;
-
+  String type = "";
   delay(1000);
 
   // Příklad GET dotazu
   //String exampleQuery = "type=dht11&id=0";
   //String exampleQuery = "type=ds18b20&id=1";
   //String exampleQuery = "type=DigitalRead&id=100&pinNo=5;";
-  String exampleQuery = "type=AnalogRead&id=200&pinNo=5;";
+  //String exampleQuery = "type=AnalogRead&id=200&pinNo=5;";
+  //String exampleQuery = "type=Ahall&id=4&pinNo=2";
+  String exampleQuery = "type=Dhall&id=3&pinNo=2";
+  //String exampleQuery = "type=PInterrupt&id=";
+  //String exampleQuery = "type=&id=";
 
   // Parsování příkladu
   String* result = parseGET(exampleQuery);
@@ -50,25 +55,28 @@ void loop() {
   //Serial.println("pinNo: "      + result[3]);
 
   // Call of specific sensor
+  type = result[0]; //Type
   sensorID = result[1].toInt(); // SensorID
   pinNo    = result[3].toInt(); // pinNo
 
   switch (sensorID) {
     case 0: // Sensor: 
-      Sensosr_DHT11();
+      Sensor_DHT11();
       break;
     case 1: // Sensor:
-      Sensosr_DS11B20();
+      Sensor_DS11B20();
       break;
-    case 2: // Sensor:
+    case 3: // Digital Hall Sensor:
+      Specific_Sensor_DigitalRead(pinNo,type,sensorID);
       break;
-    case 3: // Sensor:
+    case 4: // Analog Hall Sensor:
+      Specific_Sensor_AnalogRead(pinNo,type,sensorID);
       break;
     case 100: // Universal Diagital Input Read; type=DigitalRead&id=100&pinNo=x;
-      Sensosr_DigitalRead(pinNo);
+      Sensor_DigitalRead(pinNo);
       break;
     case 200: // Universal Analog input Read; type=AnalogRead&id=100&pinNo=x;
-      Sensosr_AnalogRead(pinNo);
+      Sensor_AnalogRead(pinNo);
       break;
     default: // If the command is not recognized, do nothing
       Serial.println("?id=" + String(sensorID) + "&message=NotSupported");
@@ -78,14 +86,38 @@ void loop() {
 
 }
 
-void Sensosr_AnalogRead(int analogPin)
+void Specific_Sensor_AnalogRead(int analogPin, String typeOfSensor,int sensorID)
+{
+  pinMode(analogPin,INPUT);
+  int analogValue = analogRead(analogPin);
+  Serial.print(F("?type="));
+  Serial.print(typeOfSensor);
+  Serial.print(F("&id="));
+  Serial.print(sensorID);
+  Serial.print(F("&value="));
+  Serial.println(analogValue);
+}
+
+void Specific_Sensor_DigitalRead(int digitalPin, String typeOfSensor,int sensorID)
+{
+  pinMode(digitalPin, INPUT);
+  int digitalValue = digitalRead(digitalPin);
+  Serial.print(F("?type="));
+  Serial.print(typeOfSensor);
+  Serial.print(F("&id="));
+  Serial.print(sensorID);
+  Serial.print(F("&value="));
+  Serial.println(digitalValue);
+}
+
+void Sensor_AnalogRead(int analogPin)
 {
   int analogValue = analogRead(analogPin);
   Serial.print(F("?type=AnalogRead&id=100&value="));
   Serial.println(analogValue);
 }
 
-void Sensosr_DigitalRead(int digitalPin)
+void Sensor_DigitalRead(int digitalPin)
 {
   pinMode(digitalPin, INPUT);
   int digitalValue = digitalRead(digitalPin);
@@ -93,7 +125,7 @@ void Sensosr_DigitalRead(int digitalPin)
   Serial.println(digitalValue);
 }
 
-void Sensosr_DS11B20()
+void Sensor_DS11B20()
 {
   sensors.requestTemperatures();  // Požádej senzory o teplotu
   float temperature = sensors.getTempCByIndex(0);  // Čti první senzor
@@ -101,10 +133,10 @@ void Sensosr_DS11B20()
   Serial.println(temperature);
 }
 
-void Sensosr_DHT11()
+void Sensor_DHT11()
 {
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
+  float h = dht11.readHumidity();
+  float t = dht11.readTemperature();
   //float f = dht.readTemperature(true); // Read temperature as Fahrenheit (isFahrenheit = true)
   //float hif = dht.computeHeatIndex(f, h); // Compute heat index in Fahrenheit (the default)
   //float hic = dht.computeHeatIndex(t, h, false); // Compute heat index in Celsius (isFahreheit = false)
@@ -156,4 +188,3 @@ String* parseGET(String queryString) {
 
   return values;
 }
-
