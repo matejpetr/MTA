@@ -18,26 +18,25 @@ id 13 = InfraredR;    type=InfraredR&id=13;
 id 14 = InfraredE;    type=InfraredE&id=14;
 id 15 = Dntc;         type=Dntc&id=15;
 id 16 = Antc;         type=Antc&id=16;
-id 17 = Joystick;     type=Joystick&id=17;
-id 18 = DhallLin;     type=DhallLin&id=18;
-id 19 = MQ135;        type=MQ135&id=19;
-id 20 = IndPNP;       type=IndPNP&id=20;
-id 21 = IndNPN;       type=IndNPN&id=21;
-id 22 = GroundHUM;    type=GroundHUM&id=22;
-id 23 = TTP223;       type=TTP223&id=23;
-id 24 = AJSR04M;      type=AJSR04M&id=24;
-id 25 = GP2Y0A21YK0F; type=GP2Y0A21YK0F&id=25;
-id 26 = RCWL0516;     type=RCWL0516&id=26;
-id 27 = Encoder;      type=Encoder&id=27;
-id 28 = TCRT5000;     type=TCRT5000&id=28;
-
+id 17 = PIresistance  type=PIresistance&id=17;
+id 18 = Joystick;     type=Joystick&id=18;
+id 19 = DhallLin;     type=DhallLin&id=19;
+id 20 = MQ135;        type=MQ135&id=20;
+id 21 = IndPNP;       type=IndPNP&id=21;
+id 22 = IndNPN;       type=IndNPN&id=22;
+id 23 = GroundHUM;    type=GroundHUM&id=23;
+id 24 = TTP223;       type=TTP223&id=24;
+id 25 = AJSR04M;      type=AJSR04M&id=25;
+id 26 = GP2Y0A21YK0F; type=GP2Y0A21YK0F&id=26;
+id 27 = RCWL0516;     type=RCWL0516&id=27;
+id 28 = Encoder;      type=Encoder&id=28;
 id 29 = TCRT5000;     type=TCRT5000&id=29;
-id 30 = TCRT5000;     type=TCRT5000&id=30;
-id 31 = TCRT5000;     type=TCRT5000&id=31;
-id 32 = TCRT5000;     type=TCRT5000&id=32;
-
-
- 
+id 30 = IRflame;      type=IRflame&id=30;
+id 31 = REED;         type=REED&id=31;
+id 32 = MicSmall;     type=MicSmall&id=32;
+id 33 = MicBig;       type=MicBig&id=33;
+id 34 = MetalTouch;   type=MetalTouch&id=34;
+id 35 = Heartbeat;    type=Heartbeat&id=35;
 
 id 100 = Universal Digital Read Fce; type=DigitalRead&id=100&port=x;
 id 200 = Universal Analog Read Fce; type=analogread&id=200;port=x;
