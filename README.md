@@ -25,11 +25,13 @@ id 20 = MQ135;        type=MQ135&id=20;
 id 21 = IndPNP;       type=IndPNP&id=21;
 id 22 = IndNPN;       type=IndNPN&id=22;
 id 23 = GroundHUM;    type=GroundHUM&id=23;
+
 id 24 = TTP223;       type=TTP223&id=24;
 id 25 = AJSR04M;      type=AJSR04M&id=25;
 id 26 = GP2Y0A21YK0F; type=GP2Y0A21YK0F&id=26;
 id 27 = RCWL0516;     type=RCWL0516&id=27;
 id 28 = Encoder;      type=Encoder&id=28;
+
 id 29 = TCRT5000;     type=TCRT5000&id=29;
 id 30 = IRflame;      type=IRflame&id=30;
 id 31 = REED;         type=REED&id=31;
