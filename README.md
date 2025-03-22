@@ -20,7 +20,7 @@ id 15 = Dntc;         type=Dntc&id=15;
 id 16 = Antc;         type=Antc&id=16;
 id 17 = PIresistance  type=PIresistance&id=17;
 id 18 = Joystick;     type=Joystick&id=18;
-id 19 = DhallLin;     type=DhallLin&id=19;
+id 19 = HallLin;     type=HallLin&id=19;
 id 20 = MQ135;        type=MQ135&id=20;
 id 21 = IndPNP;       type=IndPNP&id=21;
 id 22 = IndNPN;       type=IndNPN&id=22;
