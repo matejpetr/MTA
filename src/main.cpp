@@ -10,7 +10,7 @@
 #include "Senzor_BMP280.hpp"
 //include "Antc.hpp"
 //include "PIresistance.hpp"
-//include "Joystick.hpp"
+#include "Joystick.hpp"
 //include "HallLin.hpp"
 //include "MQ135.hpp"
 //include "IndPNP.hpp"
@@ -27,9 +27,12 @@
 #include "Senzor_AnalogRead.hpp"
 #include "Senzor_DigitalRead.hpp"
 
-
+#define VRx 15
+#define VRy 16
+#define sw 17
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
+
 
 void setup() {
   Serial.begin(115200);
@@ -121,7 +124,7 @@ void loop() {
       //Sensor_PIresistance();
       break;
     case 18: // Joystick
-      //Sensor_Joystick();
+      Sensor_Joystick(VRx,VRy,sw);
       break;
     case 19: // HallLin
       //Sensor_HallLin();
