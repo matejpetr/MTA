@@ -8,28 +8,33 @@
 //#include "HCSR04.hpp"   
 //#include "HCSR501.hpp"
 #include "Senzor_BMP280.hpp"
-//include "Antc.hpp"
-//include "PIresistance.hpp"
+//#include "Antc.hpp"
+//#include "PIresistance.hpp"
 #include "Joystick.hpp"
-//include "HallLin.hpp"
-//include "MQ135.hpp"
-//include "IndPNP.hpp"
-//include "IndNPN.hpp"
-//include "AMoisture.hpp"
-//include "TTP223.hpp"
-//include "AJSR04M.hpp"
-//include "GP2Y0A21YK0F.hpp"
-//include "Encoder.hpp"
-//include "HS0038DB.hpp"
-//include "MicSmall.hpp"
-//include "MicBig.hpp"
-//include "Heartbeat.hpp"
+//#include "HallLin.hpp"
+//#include "MQ135.hpp"
+//#include "IndPNP.hpp"
+//#include "IndNPN.hpp"
+//#include "AMoisture.hpp"
+//#include "TTP223.hpp"
+//#include "AJSR04M.hpp"
+//#include "GP2Y0A21YK0F.hpp"
+//#include "Encoder.hpp"
+//#include "HS0038DB.hpp"
+#include "MicSmall.hpp"
+#include "MicBig.hpp"
+//#include "Heartbeat.hpp"
 #include "Senzor_AnalogRead.hpp"
 #include "Senzor_DigitalRead.hpp"
 
-#define VRx 15
-#define VRy 16
-#define sw 17
+#define VRx 15  //volitelné (nelze zapojit do HW standu)
+#define VRy 16  // -||-
+#define sw 17   // -||-
+
+#define pinN1 15  // Číslo pinu (ADC2_05) prvního senzorického terminálu na HW standu
+#define MT 50 //Measuring time pro Mic sensory (ms)
+
+
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
@@ -115,7 +120,7 @@ void loop() {
       //Sensor_InfraredE();
       break;
     case 15: // Dntc
-      //Sensor_Dntc();
+      Sensor_DigitalRead(pinNo);
       break;
     case 16: // Antc
       //Sensor_Antc();
@@ -139,7 +144,7 @@ void loop() {
       //Sensor_IndNPN();
       break;
     case 23: // Dmoisture
-      //Sensor_Dmoisture();
+      Sensor_DigitalRead(pinNo);
       break;
     case 24: // AMoisture
       //Sensor_AMoisture();
@@ -166,31 +171,31 @@ void loop() {
       //Sensor_TCRT5000();
       break;
     case 32: // IRflame
-      //Sensor_IRflame();
+      Sensor_DigitalRead(pinNo);
       break;
     case 33: // REED
-      //Sensor_REED();
+      Sensor_DigitalRead(pinNo);
       break;
     case 34: // MicSmall
-      //Sensor_MicSmall();
+      Sensor_MicSmall(pinN1, MT);
       break;
     case 35: // MicBig
-      //Sensor_MicBig();
+      Sensor_MicBig(pinN1, MT);
       break;
     case 36: // MetalTouch
-      //Sensor_MetalTouch();
+      Sensor_DigitalRead(pinNo);
       break;
     case 37: // Heartbeat
       //Sensor_Heartbeat();
       break;
     case 38: // Btn
-      //Sensor_Btn();
+      Sensor_DigitalRead(pinNo);
       break;
     case 39: // TiltSwitch
-      //Sensor_TiltSwitch();
+      Sensor_DigitalRead(pinNo);
       break;
     case 40: // Dvibration
-      //Sensor_Dvibration();
+      Sensor_DigitalRead(pinNo);
       break;
       
     case 100: // Universal Diagital Input Read; type=DigitalRead&id=100&pinNo=x;
