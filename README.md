@@ -20,7 +20,7 @@ id 15 = Dntc;         type=Dntc&id=15;
 id 16 = Antc;         type=Antc&id=16;
 id 17 = PIresistance  type=PIresistance&id=17;
 id 18 = Joystick;     type=Joystick&id=18;
-id 19 = HallLin;     type=HallLin&id=19;
+id 19 = HallLin;      type=HallLin&id=19;
 id 20 = MQ135;        type=MQ135&id=20;
 id 21 = IndPNP;       type=IndPNP&id=21;
 id 22 = IndNPN;       type=IndNPN&id=22;
@@ -42,9 +42,11 @@ id 37 = Heartbeat;    type=Heartbeat&id=37;
 id 38 = Btn;          type=Btn&id=38;
 id 39 = TiltSwitch    type=TiltSwitch&id=39;
 id 40 = Dvibration    type=Dvibration&id=40;
+id 41 = HGswitch      type=HGswitch&id=41;
+id 42 = Tap           type=Tap&id=42;
 
 id 100 = Universal Digital Read Fce; type=DigitalRead&id=100&port=x;
 id 200 = Universal Analog Read Fce; type=analogread&id=200;port=x;
 
 
-id 16, 17 je nutné zapojit obráceně (signální vodič na -, gnd na S)
+!! id 16, 17 je nutné zapojit obráceně (signální vodič na -, gnd na S) !!

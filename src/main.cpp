@@ -85,13 +85,13 @@ void loop() {
       Sensor_DHT11(oneWire);
       break;
     case 2: // DHall Sensor:
-      Sensor_DigitalRead(pinNo);
+      Sensor_DigitalRead(term2);
       break;
     case 3: // AHall Sensor:
       Sensor_Ahall(term2);
       break;
     case 4: // PInterrupt
-      //Sensor_PInterrupt();
+      Sensor_DigitalRead(term2);
       break;
     case 5: // GY521
       Sensor_GY_521();
@@ -199,6 +199,12 @@ void loop() {
       Sensor_DigitalRead(pinNo);
       break;
     case 40: // Dvibration
+      Sensor_DigitalRead(pinNo);
+      break;
+    case 41: // HGswitch
+      Sensor_DigitalRead(pinNo);
+      break;
+    case 42: // Tap
       Sensor_DigitalRead(pinNo);
       break;
       
