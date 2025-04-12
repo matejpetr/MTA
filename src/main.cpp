@@ -9,7 +9,7 @@
 //#include "HCSR501.hpp"
 #include "Senzor_BMP280.hpp"
 //#include "Antc.hpp"
-//#include "PIresistance.hpp"
+#include "Senzor_PIresistance.hpp"
 #include "Senzor_Joystick.hpp"
 #include "Senzor_HallLin.hpp"
 //#include "MQ135.hpp"
@@ -131,7 +131,7 @@ void loop() {
       //Sensor_Antc();
       break;
     case 17: // PIresistance
-      //Sensor_PIresistance();
+      Sensor_PIresistance(term1);
       break;
     case 18: // Joystick
       Sensor_Joystick(VRx,VRy,sw);
