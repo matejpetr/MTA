@@ -39,6 +39,12 @@ id 34 = MicSmall;     type=MicSmall&id=34;
 id 35 = MicBig;       type=MicBig&id=35;
 id 36 = MetalTouch;   type=MetalTouch&id=36;
 id 37 = Heartbeat;    type=Heartbeat&id=37;
+id 38 = Btn;          type=Btn&id=38;
+id 39 = TiltSwitch    type=TiltSwitch&id=39;
+id 40 = Dvibration    type=Dvibration&id=40;
 
 id 100 = Universal Digital Read Fce; type=DigitalRead&id=100&port=x;
 id 200 = Universal Analog Read Fce; type=analogread&id=200;port=x;
+
+
+id 16, 17 je nutné zapojit obráceně (signální vodič na -, gnd na S)

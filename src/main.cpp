@@ -8,11 +8,10 @@
 //#include "HCSR04.hpp"   
 //#include "HCSR501.hpp"
 #include "Senzor_BMP280.hpp"
-//#include "Antc.hpp"
+#include "Senzor_Antc.hpp"
 #include "Senzor_PIresistance.hpp"
 #include "Senzor_Joystick.hpp"
 #include "Senzor_HallLin.hpp"
-//#include "MQ135.hpp"
 //#include "IndPNP.hpp"
 //#include "IndNPN.hpp"
 //#include "AMoisture.hpp"
@@ -23,7 +22,7 @@
 //#include "HS0038DB.hpp"
 #include "Senzor_MicSmall.hpp"
 #include "Senzor_MicBig.hpp"
-//#include "Heartbeat.hpp"
+#include "Senzor_Heartbeat.hpp"
 #include "Senzor_AnalogRead.hpp"
 #include "Senzor_DigitalRead.hpp"
 
@@ -34,7 +33,7 @@
 #define term1 16  // Číslo pinu (ADC2_05) prvního senzorického terminálu na HW standu (4pinové červené)
 #define term2 15  // Číslo pinu (ADC2_04) druhého senzorického terminálu na HW standu (3pinové černé)
 
-#define MT 50 //Measuring time pro Mic sensory (ms)
+#define MT 50 //Measuring time pro Mic senzory (ms)
 
 
 OneWire oneWire(ONE_WIRE_BUS);
@@ -54,7 +53,7 @@ void loop() {
   delay(1000);
 
   // Příklad GET dotazu
-  String exampleQuery = "type=dht11&id=0";
+  String exampleQuery = "type=dht11&id=1";
   //String exampleQuery = "type=ds18b20&id=1";
   //String exampleQuery = "type=DigitalRead&id=100&pinNo=5;";
   //String exampleQuery = "type=AnalogRead&id=200&pinNo=5;";
@@ -128,7 +127,7 @@ void loop() {
       Sensor_DigitalRead(pinNo);
       break;
     case 16: // Antc
-      //Sensor_Antc();
+      Sensor_Antc(term2);
       break;
     case 17: // PIresistance
       Sensor_PIresistance(term1);
@@ -191,7 +190,7 @@ void loop() {
       Sensor_DigitalRead(pinNo);
       break;
     case 37: // Heartbeat
-      //Sensor_Heartbeat();
+      Sensor_Heartbeat(term2, 5000);
       break;
     case 38: // Btn
       Sensor_DigitalRead(pinNo);
@@ -213,6 +212,6 @@ void loop() {
       Serial.println("?id=" + String(sensorID) + "&message=NotSupported");
       sensorID = -1;
       break;
-  
+  }
 
 }
