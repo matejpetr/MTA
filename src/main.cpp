@@ -3,15 +3,15 @@
 
 #include "Senzor_DS18B20.hpp"
 #include "Senzor_DHT11.hpp"
-//#include "Ahall.hpp"    
+#include "Senzor_Ahall.hpp"    
 #include "Senzor_GY_521.hpp"
 //#include "HCSR04.hpp"   
 //#include "HCSR501.hpp"
 #include "Senzor_BMP280.hpp"
 //#include "Antc.hpp"
 //#include "PIresistance.hpp"
-#include "Joystick.hpp"
-//#include "HallLin.hpp"
+#include "Senzor_Joystick.hpp"
+#include "Senzor_HallLin.hpp"
 //#include "MQ135.hpp"
 //#include "IndPNP.hpp"
 //#include "IndNPN.hpp"
@@ -21,17 +21,19 @@
 //#include "GP2Y0A21YK0F.hpp"
 //#include "Encoder.hpp"
 //#include "HS0038DB.hpp"
-#include "MicSmall.hpp"
-#include "MicBig.hpp"
+#include "Senzor_MicSmall.hpp"
+#include "Senzor_MicBig.hpp"
 //#include "Heartbeat.hpp"
 #include "Senzor_AnalogRead.hpp"
 #include "Senzor_DigitalRead.hpp"
 
 #define VRx 15  //volitelné (nelze zapojit do HW standu)
-#define VRy 16  // -||-
-#define sw 17   // -||-
+#define VRy 16  // --||--
+#define sw 17   // --||--
 
-#define pinN1 15  // Číslo pinu (ADC2_05) prvního senzorického terminálu na HW standu
+#define term1 16  // Číslo pinu (ADC2_05) prvního senzorického terminálu na HW standu (4pinové červené)
+#define term2 15  // Číslo pinu (ADC2_04) druhého senzorického terminálu na HW standu (3pinové černé)
+
 #define MT 50 //Measuring time pro Mic sensory (ms)
 
 
@@ -83,11 +85,14 @@ void loop() {
     case 1: // DHT11
       Sensor_DHT11(oneWire);
       break;
-    case 3: // DHall Sensor:
+    case 2: // DHall Sensor:
       Sensor_DigitalRead(pinNo);
       break;
-    case 4: // AHall Sensor:
-      //Sensor_Ahall();
+    case 3: // AHall Sensor:
+      Sensor_Ahall(term2);
+      break;
+    case 4: // PInterrupt
+      //Sensor_PInterrupt();
       break;
     case 5: // GY521
       Sensor_GY_521();
@@ -132,12 +137,12 @@ void loop() {
       Sensor_Joystick(VRx,VRy,sw);
       break;
     case 19: // HallLin
-      //Sensor_HallLin();
+      Sensor_HallLin(term1);
       break;
     case 20: // MQ135
       //Sensor_MQ135();
       break;
-    case 21: //IndPNP
+    case 21: // IndPNP
       //Sensor_IndPNP();
       break;
     case 22: // IndNPN
@@ -177,10 +182,10 @@ void loop() {
       Sensor_DigitalRead(pinNo);
       break;
     case 34: // MicSmall
-      Sensor_MicSmall(pinN1, MT);
+      Sensor_MicSmall(term1, MT);
       break;
     case 35: // MicBig
-      Sensor_MicBig(pinN1, MT);
+      Sensor_MicBig(term1, MT);
       break;
     case 36: // MetalTouch
       Sensor_DigitalRead(pinNo);
