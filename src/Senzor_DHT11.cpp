@@ -1,7 +1,7 @@
 #include "Senzor_DHT11.hpp"
 #include <Arduino.h>
 
-DHT11 dht11(1);
+DHT11 dht11(7);
 
 void Sensor_DHT11(OneWire &oneWire)
 {
