@@ -10,6 +10,8 @@ String* parseGET(String queryString) {
   values[0] = ""; // type
   values[1] = ""; // id
   values[2] = ""; // resolution
+  values[3] = ""; // pinNo
+  values[4] = "false";
 
   // Rozdělení na jednotlivé klíč=hodnota páry
   int start = 0;
@@ -35,6 +37,12 @@ String* parseGET(String queryString) {
         values[2] = value;
       } else if (key == "pinNo") {
         values[3] = value;
+      }
+      // Požadavek na odpoveď všech sensorů
+      if (value.indexOf('*') != -1) {
+        values[4] = "true";
+      } else {
+        values[4] = "false";
       }
     }
 
