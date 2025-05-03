@@ -34,6 +34,7 @@
 #define term2 7  // Číslo pinu (ADC2_04) druhého senzorického terminálu na HW standu (3pinové černé)
 
 #define MT 50 //Measuring time pro Mic senzory (ms)
+#define DISTANCE 150
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
@@ -130,7 +131,7 @@ void loop() {
     case 3: // AHall Sensor:
       Sensor_Ahall(term2);
       break;
-    case 4: // PInterrupt
+    case 4: // Phinterrupt
       Sensor_DigitalRead(term2);
       break;
     case 5: // GY521
@@ -140,10 +141,10 @@ void loop() {
       //Sensor_FC51();
       break;
     case 7: // HCSR04
-      Sensor_HCSR04(15,7,200);
+      Sensor_HCSR04(15,7,DISTANCE);  // upravit piny
       break;
     case 8: // HCSR501
-      //Sensor_HCSR501();
+      Sensor_DigitalRead(term2);
       break;
     case 9: // KW113Z
       //Sensor_KW113Z();
@@ -179,7 +180,7 @@ void loop() {
       Sensor_HallLin(term1);
       break;
     case 20: // MQ135
-      //Sensor_MQ135();
+      Sensor_DigitalRead(term1);
       break;
     case 21: // IndPNP
       //Sensor_IndPNP();
