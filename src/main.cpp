@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Adafruit_BMP085.h>
 #include "Parser.hpp"
 
 #include "Senzor_DS18B20.hpp"
@@ -23,8 +24,10 @@
 #include "Senzor_MicSmall.hpp"
 #include "Senzor_MicBig.hpp"
 #include "Senzor_Heartbeat.hpp"
+#include "Senzor_BMP180.hpp"
 #include "Senzor_AnalogRead.hpp"
 #include "Senzor_DigitalRead.hpp"
+
 
 #define VRx 15  //volitelné (nelze zapojit do HW standu)
 #define VRy 16  // --||--
@@ -33,11 +36,20 @@
 #define term1 15  // Číslo pinu (ADC2_05) prvního senzorického terminálu na HW standu (4pinové červené)
 #define term2 7  // Číslo pinu (ADC2_04) druhého senzorického terminálu na HW standu (3pinové černé)
 
+//3v3 i2c
+#define SDA 11
+#define SCL 12
+
+//5v i2c
+#define xSDA 10
+#define xSCL 11
+
 #define MT 50 //Measuring time pro Mic senzory (ms)
 #define DISTANCE 150
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
+
 
 //void SensorUPDATE(int sensorID);
 /*void SensorUPDATE_ALL(int sensorID);
@@ -51,7 +63,9 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("M-TA: Sensor board ready!");
-  Serial.setTimeout(0);    
+  Serial.setTimeout(0); 
+  Sensor_BMP180_Init(SDA, SCL);  
+  
 }
 
 void loop() {
@@ -161,8 +175,8 @@ void loop() {
     case 13: // InfraredR
       //Sensor_InfraredR();
       break;
-    case 14: // InfraredE
-      //Sensor_InfraredE();
+    case 14: // InfraredE     
+      Sensor_BMP180();        // upravit cislovani - provizorni
       break;
     case 15: // Dntc
       Sensor_DigitalRead(term1);
