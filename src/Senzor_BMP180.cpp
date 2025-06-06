@@ -4,13 +4,13 @@
 
 #define BMP085_ADDRESS 0x77 //defaultní I2C adresa pro ESP32
 
-TwoWire myWire(0);  // vlastní I2C instance
+extern TwoWire I2C; 
 Adafruit_BMP085 bmp180;
 
 bool Sensor_BMP180_Init(int SDA, int SCL) {
-  myWire.begin(SDA, SCL);
+  I2C.begin(SDA, SCL);
 
-  if (!bmp180.begin(BMP085_ADDRESS, &myWire)) {
+  if (!bmp180.begin(BMP085_ADDRESS, &I2C)) {
     return false;
   }
   

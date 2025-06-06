@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include <Adafruit_BMP085.h>
+#include <Adafruit_BMP280.h>
 #include "Parser.hpp"
+#include "Adafruit_TCS34725.h"
+
 
 #include "Senzor_DS18B20.hpp"
 #include "Senzor_DHT11.hpp"
@@ -13,18 +16,20 @@
 #include "Senzor_PHresistance.hpp"
 #include "Senzor_Joystick.hpp"
 #include "Senzor_HallLin.hpp"
+#include "Senzor_TCS34725.hpp"
 //#include "Senzor_IndPNP.hpp"
 //#include "Senzor_IndNPN.hpp"
 //#include "Senzor_AMoisture.hpp"
 //#include "Senzor_TTP223.hpp"
 //#include "Senzor_AJSR04M.hpp"
-//#include "Senzor_GP2Y0A21YK0F.hpp"
+#include "Senzor_GP2Y0A21YK0F.hpp"
 //#include "Senzor_Encoder.hpp"
 //#include "Senzor_HS0038DB.hpp"
 #include "Senzor_MicSmall.hpp"
 #include "Senzor_MicBig.hpp"
 #include "Senzor_Heartbeat.hpp"
 #include "Senzor_BMP180.hpp"
+#include "Senzor_BMP.hpp"
 #include "Senzor_AnalogRead.hpp"
 #include "Senzor_DigitalRead.hpp"
 
@@ -42,12 +47,13 @@
 
 //5v i2c
 #define xSDA 10
-#define xSCL 11
+//#define xSCL  neexistuje
 
 #define MT 50 //Measuring time pro Mic senzory (ms)
 #define DISTANCE 150
 
 OneWire oneWire(ONE_WIRE_BUS);
+TwoWire I2C(0); 
 DallasTemperature sensors(&oneWire);
 
 
@@ -58,13 +64,15 @@ void SensorRESET(int sensorID);
 void SensorRESET_ALL(int sensorID);
 void SensorCONFIG(int sensorID); */
 
-
 void setup() 
 {
   Serial.begin(115200);
   Serial.println("M-TA: Sensor board ready!");
   Serial.setTimeout(0); 
-  Sensor_BMP180_Init(SDA, SCL);  
+  //Sensor_BMP180_Init(SDA, SCL);  
+  Sensor_BMP280_Init(SDA, SCL);
+  Sensor_TCS34725_Init(SDA,SCL);
+  
   
 }
 
@@ -75,36 +83,19 @@ void loop() {
   String type = "";
   bool ResponseAll = "false";
  
-  // Příklad GET dotazu
-  //String exampleQuery = "type=dht11&id=16";
-  //String exampleQuery = "type=ds18b20&id=1";
-  //String exampleQuery = "type=DigitalRead&id=100&pinNo=5;";
-  //String exampleQuery = "type=AnalogRead&id=200&pinNo=5;";
-  //String exampleQuery = "type=Ahall&id=4&pinNo=2";
-  //String exampleQuery = "type=Dhall&id=3&pinNo=2";
-  //String exampleQuery = "type=PInterrupt&id=";
-  //String exampleQuery = "type=&id=";
-
+  //parsování příchozí zprávy
   if (Serial.available() > 0) {
 
     String exampleQuery = Serial.readString();
     String* result = parseGET(exampleQuery);
-    
 
-      // Zobrazení výsledného pole
-        //Serial.println("--- Parsed Parameters ---");
-      //Serial.println("Type: "       + result[0]);
-      //Serial.println("SensorID: "   + result[1]);
-      //Serial.println("Resolution: " + result[2]);
-      //Serial.println("pinNo: "      + result[3]);
-
-      // Call of specific sensor
+        //zápis výsledků parsování
         type = result[0]; //Type
         sensorID = result[1].toInt(); // SensorID
-        //pinNo    = result[3].toInt(); // pinNo
+        ResponseAll = result[4]; 
    
 
-  /*if (type == "UPDATE") {
+  if (type == "UPDATE") {
     if (ResponseAll) {
       //SensorUPDATE_ALL(sensorID);
     } else {
@@ -113,26 +104,31 @@ void loop() {
   }
      else if (type == "RESET") {
     if (ResponseAll) {
-      SensorRESET_ALL(sensorID);
+      //SensorRESET_ALL(sensorID);
     } else {
-      SensorRESET(sensorID);
+      //SensorRESET(sensorID);
     }
   }
-  else if (type == "INIT") {
-    SensorINIT(sensorID);
+    else if (type == "INIT") {
+    //SensorINIT(sensorID);
   }
-  else if (type == "CONFIG") {
-    SensorCONFIG(sensorID);
-  } */
+    else if (type == "CONFIG") {
+    //SensorCONFIG(sensorID);
+  } 
   
 
 
 
 
 
-//void SensorUPDATE(int sensorID){
 
-  switch (sensorID) {
+
+ }
+}
+
+
+void SensorUPDATE(int sensorID){
+switch (sensorID) {
     case 0: // DS18B20
       Sensor_DS18B20(sensors);
       break;
@@ -152,7 +148,7 @@ void loop() {
       Sensor_GY_521();
       break;
     case 6: // FC51
-      //Sensor_FC51();
+      Sensor_DigitalRead(term2);
       break;
     case 7: // HCSR04
       Sensor_HCSR04(15,7,DISTANCE);  // upravit piny
@@ -164,10 +160,11 @@ void loop() {
       //Sensor_KW113Z();
       break;
     case 10: // BMP280
-      Sensor_GY_BMP280();
+      //Sensor_GY_BMP280();
+        Sensor_BMP280();
       break;
     case 11: // TCS34725
-      //Sensor_TCS34725();
+      Sensor_TCS34725(SDA,SCL);
       break;
     case 12: // VL53L0X
       //Sensor_VL53L0X();
@@ -215,7 +212,7 @@ void loop() {
       //Sensor_AJSR04M();
       break;
     case 27: // GP2Y0A21YK0F
-      //Sensor_GP2Y0A21YK0F();
+      Sensor_GP2Y0A21YK0F();
       break;
     case 28: // RCWL0516
       //Sensor_RCWL0516();
@@ -274,6 +271,9 @@ void loop() {
       sensorID = -1;
       break;
   }
- }
+}
+void SensorRESET(int sensorID){
+
+  
 }
 

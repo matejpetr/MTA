@@ -11,7 +11,7 @@ String* parseGET(String queryString) {
   values[1] = ""; // id
   values[2] = ""; // resolution
   values[3] = ""; // pinNo
-  values[4] = "false";
+  values[4] = "false"; //žádany všechny snímače
 
   // Rozdělení na jednotlivé klíč=hodnota páry
   int start = 0;
