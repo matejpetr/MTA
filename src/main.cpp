@@ -35,7 +35,7 @@
 
 
 #define VRx 15  //volitelné (nelze zapojit do HW standu)
-#define VRy 16  // --||--
+#define VRy 7  // --||--
 #define sw 17   // --||--
 
 #define term1 15  // Číslo pinu (ADC2_05) prvního senzorického terminálu na HW standu (4pinové červené)
@@ -52,17 +52,71 @@
 #define MT 50 //Measuring time pro Mic senzory (ms)
 #define DISTANCE 150
 
-OneWire oneWire(ONE_WIRE_BUS);
-TwoWire I2C(0); 
+
+//sběrnice OneWire
+OneWire oneWire(15);
 DallasTemperature sensors(&oneWire);
 
+//sběrnice I2C
+TwoWire I2C(0); 
 
-//void SensorUPDATE(int sensorID);
-/*void SensorUPDATE_ALL(int sensorID);
+DHT dht(term2,DHT11); 
+
+
+void SensorUPDATE(int sensorID);
+//void SensorUPDATE_ALL(int sensorID);
 void SensorINIT(int sensorID);
-void SensorRESET(int sensorID);
-void SensorRESET_ALL(int sensorID);
-void SensorCONFIG(int sensorID); */
+//void SensorRESET(int sensorID);
+//void SensorRESET_ALL(int sensorID);
+//void SensorCONFIG(int sensorID); */
+
+
+Sensor* sensorTable[] = {
+  new SensorDS18B20(&oneWire),    //0
+  new SensorDHT11(term2),         //1
+  new SensorDigitalRead(term1),   //2
+  new SensorAhall(term2),         //3
+  new SensorDigitalRead(term1),   //4
+  new SensorDigitalRead(term1),   //5  *zatím neexistuje
+  new SensorDigitalRead(term1),   //6
+  new SensorHCSR04(term1, term2, DISTANCE), //7
+  new SensorDigitalRead(term1),   //8
+  new SensorDigitalRead(term1),   //9
+  new SensorBMP280(SDA, SCL),     //10
+  new SensorTCS34725(SDA, SCL),   //11
+  new SensorDigitalRead(term1),   //12  *zatím neexistuje
+  new SensorDigitalRead(term1),   //13  *zatím neexistuje
+  new SensorDigitalRead(term1),   //14  *zatím neexistuje
+  new SensorDigitalRead(term1),   //15
+  new SensorAntc(term1),          //16
+  new SensorPHresistance(term1),  //17
+  new SensorJoystick(VRx,VRy,sw), //18
+  new SensorHallLin(term2),       //19
+  new SensorDigitalRead(term1),   //20
+  new SensorDigitalRead(term1),   //21
+  new SensorDigitalRead(term1),   //22
+  new SensorDigitalRead(term1),   //23
+  new SensorDigitalRead(term1),   //24  *zatím neexistuje
+  new SensorDigitalRead(term1),   //25
+  new SensorDigitalRead(term1),   //26  *zatím neexistuje
+  new SensorGP2Y0A21YK0F(term1),  //27
+  new SensorDigitalRead(term1),   //28
+  new SensorDigitalRead(term1),   //29  *zatím neexistuje
+  new SensorDigitalRead(term1),   //30
+  new SensorDigitalRead(term1),   //31
+  new SensorDigitalRead(term1),   //32
+  new SensorDigitalRead(term1),   //33
+  new SensorMicSmall(term1, MT),  //34
+  new SensorMicBig(term1, MT),    //35
+  new SensorDigitalRead(term1),   //36
+  new SensorHeartbeat(term2,5000),//37 - delka mereni(ms)
+  new SensorDigitalRead(term1),   //38
+  new SensorDigitalRead(term1),   //39
+  new SensorDigitalRead(term1),   //40
+  new SensorDigitalRead(term1),   //41
+  new SensorDigitalRead(term1),   //42
+ 
+};
 
 void setup() 
 {
@@ -70,63 +124,62 @@ void setup()
   Serial.println("M-TA: Sensor board ready!");
   Serial.setTimeout(0); 
   //Sensor_BMP180_Init(SDA, SCL);  
-  Sensor_BMP280_Init(SDA, SCL);
+  //Sensor_BMP280_Init(SDA, SCL);
   Sensor_TCS34725_Init(SDA,SCL);
-  
-  
+  dht.begin();
+  Sensor_BMP280_Init(SDA,SCL);
 }
+
+String serialBuffer = "";  // buffer pro sestavení celé zprávy
+
 
 void loop() {
+  if (Serial.available()) {
+    char c = Serial.read();
 
-  int sensorID = 0;
-  int pinNo = 0;
-  String type = "";
-  bool ResponseAll = "false";
- 
-  //parsování příchozí zprávy
-  if (Serial.available() > 0) {
+    if (c == '\n') {
+      serialBuffer.trim();
+      String* result = parseGET(serialBuffer);
 
-    String exampleQuery = Serial.readString();
-    String* result = parseGET(exampleQuery);
+      String type = result[0];
+      int sensorID = result[1].toInt();
+      bool ResponseAll = result[4] == "true";
 
-        //zápis výsledků parsování
-        type = result[0]; //Type
-        sensorID = result[1].toInt(); // SensorID
-        ResponseAll = result[4]; 
-   
 
-  if (type == "UPDATE") {
-    if (ResponseAll) {
-      //SensorUPDATE_ALL(sensorID);
+      if (type == "UPDATE") {
+        SensorUPDATE(sensorID);
+      } else {
+        
+      }
+      if (type == "RESET") {
+        //SensorRESET(sensorID);
+      } else {
+        
+      }
+      if (type == "INIT") {
+        SensorINIT(sensorID);
+      } else {
+       
+      }
+
+      serialBuffer = "";  // vyprázdní buffer
     } else {
-      SensorUPDATE(sensorID);
+      serialBuffer += c;  // zapíše znak
     }
   }
-     else if (type == "RESET") {
-    if (ResponseAll) {
-      //SensorRESET_ALL(sensorID);
-    } else {
-      //SensorRESET(sensorID);
-    }
-  }
-    else if (type == "INIT") {
-    //SensorINIT(sensorID);
-  }
-    else if (type == "CONFIG") {
-    //SensorCONFIG(sensorID);
-  } 
-  
 
-
-
-
-
-
-
- }
 }
 
 
+void SensorUPDATE(int sensorID){
+    sensorTable[sensorID]->update();
+}
+
+void SensorINIT(int sensorID){
+  sensorTable[sensorID]->init();
+}
+
+/*
 void SensorUPDATE(int sensorID){
 switch (sensorID) {
     case 0: // DS18B20
@@ -276,4 +329,4 @@ void SensorRESET(int sensorID){
 
   
 }
-
+*/

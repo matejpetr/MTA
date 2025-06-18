@@ -1,12 +1,19 @@
 #include "Senzor_DHT11.hpp"
 #include <Arduino.h>
 
-DHT11 dht11(7);
 
-void Sensor_DHT11(OneWire &oneWire)
-{
-  float h = dht11.readHumidity();
-  float t = dht11.readTemperature();
+//extern DHT dht;
+
+void Init_DHT11(int pin) {
+ 
+  dht.begin();
+}
+
+
+void Sensor_DHT11(int pin){
+ 
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
   //float f = dht.readTemperature(true); // Read temperature as Fahrenheit (isFahrenheit = true)
   //float hif = dht.computeHeatIndex(f, h); // Compute heat index in Fahrenheit (the default)
   //float hic = dht.computeHeatIndex(t, h, false); // Compute heat index in Celsius (isFahreheit = false)

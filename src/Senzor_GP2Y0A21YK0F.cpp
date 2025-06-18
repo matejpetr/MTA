@@ -2,9 +2,9 @@
 #include "Senzor_GP2Y0A21YK0F.hpp"
 #include <GP2Y0A21YK0F.h>
 
-DMSU sharp(15);
 
-void Sensor_GP2Y0A21YK0F (){
+void Sensor_GP2Y0A21YK0F (int pin){
+  DMSU sharp(pin);
   
   float distance = sharp.read(0); // 0 pro cm, 1 pro mm
 
