@@ -23,9 +23,11 @@ bool Sensor_BMP280_Init(int SDA, int SCL) {
   }
 
 void Sensor_BMP280() {
-    
+  
+    float cal = 42.8; //kalibrační koeficient - klidně upravit
     float t = bmp.readTemperature();
-    float p = ((bmp.readPressure()+32*100)/100)-7;
+    //float p = ((bmp.readPressure()+32*100)/100)-7;
+    float p = (bmp.readPressure()/100)+cal;    
     float a = bmp.readAltitude(p);
   
     Serial.print(F("?type=BMP180&id=14&press="));
