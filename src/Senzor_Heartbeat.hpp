@@ -3,25 +3,19 @@
 #include<Arduino.h>
 #include "Sensor.hpp"
 
-void Sensor_Heartbeat(int pin, int time);    //time je délka měření v ms   
- 
+void Heartbeat_update(int pin, int time);    //time je délka měření v ms   
+bool Heartbeat_init(int pin);
+void Heartbeat_reset();
 
-class SensorHeartbeat : public Sensor {
+class Heartbeat : public Sensor {
 public:
-  SensorHeartbeat(int pin,int time) :_pin(pin), _time(time) {}
+  Heartbeat(int pin,int time) :_pin(pin), _time(time) {}
 
   
-  void update() override {
-    Sensor_Heartbeat(_pin,_time);
-  }
-
-   void reset() override {
-    
-  }
-
-   void init() override {
-    
-  }
+  void update() override {Heartbeat_update(_pin,_time);}
+  void reset() override {Heartbeat_reset();}
+  bool init() override {return Heartbeat_init(_pin);}
+  const char* getType() override {return "Heartbeat";}
 
 private:
   int _pin,_time;

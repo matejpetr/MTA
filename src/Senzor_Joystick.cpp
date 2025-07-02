@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Senzor_Joystick.hpp"
 
-void Sensor_Joystick(int x, int y, int sw) {
+void Joystick_update(int x, int y, int sw) {
     
     int BtnState;
     int threshold = 1000;  // Threshold sloužící jako mez pro změnu stavu
@@ -22,3 +22,14 @@ void Sensor_Joystick(int x, int y, int sw) {
     Serial.print(F("?type=Joystick&id=18&direction="));
     Serial.println(direction);
 }
+
+bool Joystick_init(int x, int y) {
+  int xValue = analogRead(x);
+  int yValue = analogRead(y);
+
+  return (xValue >= 2850 && xValue <= 3000) &&
+         (yValue >= 2850 && yValue <= 3000);
+}
+
+
+void Joystick_reset(){}

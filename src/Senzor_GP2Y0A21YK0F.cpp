@@ -3,7 +3,7 @@
 #include <GP2Y0A21YK0F.h>
 
 
-void Sensor_GP2Y0A21YK0F (int pin){
+void GP2Y0A21YK0F_update(int pin){
   DMSU sharp(pin);
   
   float distance = sharp.read(0); // 0 pro cm, 1 pro mm
@@ -19,7 +19,26 @@ void Sensor_GP2Y0A21YK0F (int pin){
   Serial.println(distance); // vzdálenost v cm 
 
 }
- 
+
+bool GP2Y0A21YK0F_init(int pin) {
+  DMSU sharp(pin);
+  
+  float first = sharp.read(0);
+  delay(10);
+  float last = sharp.read(0);
+
+  // Rozdíl mezi první a poslední hodnotou
+  float diff = abs(first - last);
+
+  bool inRange = (first >= 20.0 && first <= 80.0); //hodnoty jsou ve správném rozsahu
+  bool stable = (diff < 5.0); //rozdíl mezi hodnotami není moc velký (např. 5 cm)
+
+  return inRange && stable;
+}
+
+void GP2Y0A21YK0F_reset(){
+  
+}
 
 
 

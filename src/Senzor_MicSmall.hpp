@@ -3,26 +3,21 @@
 #include <Arduino.h>
 #include "Sensor.hpp"
 
-void Sensor_MicSmall(int pin, int MT); //pin - A0, MT - Measuring time (ms)
+void MicSmall_update(int pin, int MT); //pin - A0, MT - Measuring time (ms)
+bool MicSmall_init(int pin);
+void MicSmall_reset();
 
 
 
-class SensorMicSmall : public Sensor {
+class MicSmall : public Sensor {
 public:
-  SensorMicSmall(int pin,int time) :_pin(pin), _time(time) {}
+  MicSmall(int pin,int time) :_pin(pin), _time(time) {}
 
   
-  void update() override {
-    Sensor_MicSmall(_pin,_time);
-  }
-
-   void reset() override {
-    
-  }
-
-   void init() override {
-    
-  }
+  void update() override {MicSmall_update(_pin,_time);}
+  void reset() override {MicSmall_reset();}
+  bool init() override {return MicSmall_init(_pin);}
+  const char* getType() override {return "MicSmall";}
 
 private:
   int _pin,_time;

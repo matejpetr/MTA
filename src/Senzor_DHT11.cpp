@@ -4,13 +4,8 @@
 
 //extern DHT dht;
 
-void Init_DHT11(int pin) {
- 
-  dht.begin();
-}
 
-
-void Sensor_DHT11(int pin){
+void DHT11_update(int pin){
  
   float h = dht.readHumidity();
   float t = dht.readTemperature();
@@ -21,4 +16,15 @@ void Sensor_DHT11(int pin){
   Serial.print(h);
   Serial.print(F("&temp="));
   Serial.println(t);
+}
+
+
+void DHT11_reset() {
+  dht.begin();
+
+}
+
+bool DHT11_init(){
+return false;
+
 }

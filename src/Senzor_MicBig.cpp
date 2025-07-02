@@ -1,9 +1,10 @@
 #include "Senzor_MicBig.hpp"
 #include <Arduino.h>
+float refValue = 200;
 
-void Sensor_MicBig(int pin, int MT) {
+void MicBig_update(int pin, int MT) {
     
-    float refValue = 200; //referenční hodnota zvuku 
+     //referenční hodnota zvuku 
     float MaxDiff = 0;  // Maximální rozdíl mezi měřeným a referenčním zvukem
     unsigned long StartTime = millis();
     while (millis() - StartTime < MT){      // MT představuje Measuring Time (délka jednoho měření)
@@ -15,4 +16,11 @@ void Sensor_MicBig(int pin, int MT) {
     float volume = 20.0 * log10(MaxDiff + 1); // Převod na decibely
      Serial.print(F("?type=MicBig&id=35&volume=")); 
      Serial.println(volume);
+    
+}
+
+void MicBig_reset(){}
+
+bool MicBig_init(int pin){
+    return (analogRead(pin)<refValue);
 }

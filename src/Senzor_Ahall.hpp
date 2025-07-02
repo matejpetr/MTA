@@ -3,25 +3,20 @@
 #include <Arduino.h>
 #include "Sensor.hpp"
 
-void Sensor_Ahall(int pin);
+void Ahall_update(int pin);
+bool Ahall_init(int pin);  
+void Ahall_reset();
 
 
-class SensorAhall : public Sensor {
+class Ahall : public Sensor {
 public:
-  SensorAhall(int pin) :_pin(pin) {}
+  Ahall(int pin) :_pin(pin) {}
 
   
-  void update() override {
-    Sensor_Ahall(_pin);
-  }
-
-   void reset() override {
-    
-  }
-
-   void init() override {
-    
-  }
+  void update() override {Ahall_update(_pin);}
+  void reset() override {Ahall_reset();}
+  bool init() override {return Ahall_init(_pin);}
+  const char* getType() override {return "Ahall";}
 
 private:
   int _pin;

@@ -3,24 +3,19 @@
 #include <Arduino.h>
 #include "Sensor.hpp"
 
-void Sensor_PHresistance(int pin);
+void PHresistance_update(int pin);
+bool PHresistance_init(int pin);
+void PHresistance_reset();
 
-class SensorPHresistance : public Sensor {
+class PHresistance : public Sensor {
 public:
-  SensorPHresistance(int pin)
+  PHresistance(int pin)
     : _pin(pin) {}
 
-  void update() override {
-    Sensor_PHresistance(_pin);
-  }
-
-  void reset() override {
-  
-  }
-
-  void init() override {
-   
-  }
+  void update() override {PHresistance_update(_pin);}
+  void reset() override {PHresistance_reset();}
+  bool init() override {return PHresistance_init(_pin);}
+  const char* getType() override {return "PHresistance";}
 
 private:
   int _pin;

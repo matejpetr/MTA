@@ -3,10 +3,10 @@
 #include "Senzor_TCS34725.hpp"
 
 
-Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_614MS, TCS34725_GAIN_4X);
+extern Adafruit_TCS34725 tcs;
 extern TwoWire I2C; 
 
-bool Sensor_TCS34725_Init(int SDA, int SCL) {
+bool TCS34725_init(int SDA, int SCL) {
   I2C.begin(SDA, SCL);       
   if (!tcs.begin(0x29,&I2C)) {    
    
@@ -16,7 +16,7 @@ bool Sensor_TCS34725_Init(int SDA, int SCL) {
 } 
 
 
-void Sensor_TCS34725() {
+void TCS34725_update() {
   uint16_t r, g, b, c;
 
   tcs.getRawData(&r, &g, &b, &c);
@@ -56,4 +56,8 @@ void Sensor_TCS34725() {
   Serial.println(b8,DEC);
 
 
+}
+
+void TCS34725_reset(){
+  tcs.begin(0x29,&I2C);
 }

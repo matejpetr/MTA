@@ -5,22 +5,21 @@
 #include <DallasTemperature.h>
 
 
-void Sensor_DS18B20(DallasTemperature &sensors);
+void DS18B20_update(DallasTemperature &sensors);
+bool DS18B20_init(DallasTemperature &sensors);
+void DS18B20_reset(DallasTemperature &sensors);
 
-class SensorDS18B20 : public Sensor {
+class DS18B20 : public Sensor {
 public:
-  SensorDS18B20(OneWire* oneWire)
+  DS18B20(OneWire* oneWire)
     : _sensors(oneWire) {
     _sensors.begin();  
   }
 
-  void update() override {
-   Sensor_DS18B20(_sensors);
-  }
-
-  void reset() override {}
-  void init() override {}
-
+  void update() override {DS18B20_update(_sensors);}
+  void reset() override {DS18B20_reset(_sensors);}
+  bool init() override {return DS18B20_init(_sensors);}
+  const char* getType() override {return "DS18B20";}
 private:
  
   DallasTemperature _sensors;

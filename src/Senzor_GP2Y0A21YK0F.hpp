@@ -3,25 +3,19 @@
 #include <Arduino.h>
 #include "Sensor.hpp"
 
-void Sensor_GP2Y0A21YK0F(int pin);
+void GP2Y0A21YK0F_update(int pin);
+bool GP2Y0A21YK0F_init(int pin);
+void GP2Y0A21YK0F_reset();
 
-class SensorGP2Y0A21YK0F : public Sensor {
+class GP2Y0A21YK0F : public Sensor {
 public:
-  SensorGP2Y0A21YK0F(int pin) :_pin(pin) {}
+  GP2Y0A21YK0F(int pin) :_pin(pin) {}
 
   
-  void update() override {
-    Sensor_GP2Y0A21YK0F(_pin);
-  }
-
-   void reset() override {
-    
-  }
-
-   void init() override {
-    
-  }
-
+  void update() override {GP2Y0A21YK0F_update(_pin);}
+  void reset() override {GP2Y0A21YK0F_reset();}
+  bool init() override {return GP2Y0A21YK0F_init(_pin);}
+  const char* getType() override {return "GP2Y0A21YK0F";}
 private:
   int _pin;
 };

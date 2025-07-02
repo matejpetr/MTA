@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Senzor_Heartbeat.hpp"
 
-void Sensor_Heartbeat(int pin, int time_ms) {
+void Heartbeat_update(int pin, int time_ms) {
   const int samp_siz = 4;       // velikost vyhlazovacího okna
   const int threshold = 4;      // počet po sobě jdoucích vzestupů nutných pro detekci pulzu
   const int min_beat_interval = 300; // minimální interval mezi údery v ms (chrání před falešnými pulzy)
@@ -64,7 +64,24 @@ void Sensor_Heartbeat(int pin, int time_ms) {
   float duration_s = (millis() - start_time) / 1000.0;
   float bpm = (beat_count > 0 && duration_s > 0) ? (beat_count * 60.0 / duration_s) : 0;
 
-  // Výpis výsledku na seriovou linku ve formátu JSON
   Serial.print(F("?type=Heartbeat&id=37&bpm="));
   Serial.println(bpm, 1);  // Hodnota BPM (údery za minutu)
+ 
 }
+
+
+bool Heartbeat_init(int pin) {
+  const int samples = 10;
+  int valid_samples = 0;
+  for (int i = 0; i < samples; i++) {
+    int val = analogRead(pin);
+    delay(10);
+    if (val > 200 && val < 650) {  // klidně poladit
+      valid_samples++;
+    }
+  }
+  return (valid_samples > samples / 2);  // pokud více než polovina vzorků je OK, senzor považujeme za připojený
+}
+
+
+void Heartbeat_reset(){}

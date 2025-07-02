@@ -1,7 +1,8 @@
 #include <Arduino.h>
 #include"Senzor_Antc.hpp"
+int raw;
 
-void Sensor_Antc(int pin) {
+void Antc_update(int pin) {
     int Raw = analogRead(pin);
     double Vo, R2;
     float Temp;
@@ -16,4 +17,21 @@ void Sensor_Antc(int pin) {
 
     Serial.print(F("?type=Antc&id=16&temp=")); 
     Serial.println(Temp); //Teplota ve stupních
+}
+
+bool Antc_init(int pin){
+  const int samples = 5;
+    int sum = 0;
+
+    for (int i = 0; i < samples; i++) {
+        sum += analogRead(pin);
+        delay(5);
+    }
+    int avg = sum / samples;
+    return (avg > 500 && avg < 2500);   // nutno upravit podle potřeby
+}
+
+
+void Antc_reset(){
+raw = 0;
 }

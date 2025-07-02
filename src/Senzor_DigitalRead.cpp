@@ -1,24 +1,19 @@
 #include "Senzor_DigitalRead.hpp"
 #include <Arduino.h>
 
-void Specific_Sensor_DigitalRead(int digitalPin, String typeOfSensor,int sensorID)
+
+
+
+void Sensor_DigitalRead(int Pin, int id, const char* type)
 {
-  pinMode(digitalPin, INPUT);
-  int digitalValue = digitalRead(digitalPin);
+  pinMode(Pin, INPUT);
+  int digitalValue = digitalRead(Pin);
   Serial.print(F("?type="));
-  Serial.print(typeOfSensor);
+  Serial.print(type);
   Serial.print(F("&id="));
-  Serial.print(sensorID);
+  Serial.print(id);
   Serial.print(F("&state="));
   Serial.println(digitalValue);
-}
 
-
-void Sensor_DigitalRead(int digitalPin)
-{
-  pinMode(digitalPin, INPUT);
-  int digitalValue = digitalRead(digitalPin);
-  Serial.print(F("?type=DigitalRead&id=200&state="));
-  Serial.println(digitalValue);
 }
 

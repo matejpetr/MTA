@@ -54,67 +54,70 @@
 
 
 //sběrnice OneWire
-OneWire oneWire(15);
+OneWire oneWire(term1);
 DallasTemperature sensors(&oneWire);
 
 //sběrnice I2C
 TwoWire I2C(0); 
 
 DHT dht(term2,DHT11); 
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_614MS, TCS34725_GAIN_4X);
+Adafruit_BMP280 bmp(&I2C);
 
+//deklarace funkcí
 
 void SensorUPDATE(int sensorID);
-//void SensorUPDATE_ALL(int sensorID);
-void SensorINIT(int sensorID);
-//void SensorRESET(int sensorID);
-//void SensorRESET_ALL(int sensorID);
+void SensorUPDATE_ALL();
+void SensorINIT();
+void SensorRESET(int sensorID);
+void SensorRESET_ALL();
 //void SensorCONFIG(int sensorID); */
 
 
-Sensor* sensorTable[] = {
-  new SensorDS18B20(&oneWire),    //0
-  new SensorDHT11(term2),         //1
-  new SensorDigitalRead(term1),   //2
-  new SensorAhall(term2),         //3
-  new SensorDigitalRead(term1),   //4
-  new SensorDigitalRead(term1),   //5  *zatím neexistuje
-  new SensorDigitalRead(term1),   //6
-  new SensorHCSR04(term1, term2, DISTANCE), //7
-  new SensorDigitalRead(term1),   //8
-  new SensorDigitalRead(term1),   //9
-  new SensorBMP280(SDA, SCL),     //10
-  new SensorTCS34725(SDA, SCL),   //11
-  new SensorDigitalRead(term1),   //12  *zatím neexistuje
-  new SensorDigitalRead(term1),   //13  *zatím neexistuje
-  new SensorDigitalRead(term1),   //14  *zatím neexistuje
-  new SensorDigitalRead(term1),   //15
-  new SensorAntc(term1),          //16
-  new SensorPHresistance(term1),  //17
-  new SensorJoystick(VRx,VRy,sw), //18
-  new SensorHallLin(term2),       //19
-  new SensorDigitalRead(term1),   //20
-  new SensorDigitalRead(term1),   //21
-  new SensorDigitalRead(term1),   //22
-  new SensorDigitalRead(term1),   //23
-  new SensorDigitalRead(term1),   //24  *zatím neexistuje
-  new SensorDigitalRead(term1),   //25
-  new SensorDigitalRead(term1),   //26  *zatím neexistuje
-  new SensorGP2Y0A21YK0F(term1),  //27
-  new SensorDigitalRead(term1),   //28
-  new SensorDigitalRead(term1),   //29  *zatím neexistuje
-  new SensorDigitalRead(term1),   //30
-  new SensorDigitalRead(term1),   //31
-  new SensorDigitalRead(term1),   //32
-  new SensorDigitalRead(term1),   //33
-  new SensorMicSmall(term1, MT),  //34
-  new SensorMicBig(term1, MT),    //35
-  new SensorDigitalRead(term1),   //36
-  new SensorHeartbeat(term2,5000),//37 - delka mereni(ms)
-  new SensorDigitalRead(term1),   //38
-  new SensorDigitalRead(term1),   //39
-  new SensorDigitalRead(term1),   //40
-  new SensorDigitalRead(term1),   //41
-  new SensorDigitalRead(term1),   //42
+Sensor* SeznamSenzoru[] = {
+  new DS18B20(&oneWire),                      //0
+  new DHT11x(term2),                          //1
+  new SensorDigitalRead(term1,2,"Dhall"),     //2
+  new Ahall(term2),                           //3
+  new SensorDigitalRead(term1,4,"PInterrupt"),//4
+  new SensorDigitalRead(term1,5, "GY521"),    //5  *zatím neexistuje
+  new SensorDigitalRead(term1,6,"FC51"),      //6
+  new HCSR04(term1, term2, DISTANCE),         //7
+  new SensorDigitalRead(term1,8,"HCSR501"),   //8
+  new SensorDigitalRead(term1,9,"KW113Z"),    //9
+  new BMP280(SDA, SCL),                       //10
+  new TCS34725(SDA, SCL),                     //11
+  new SensorDigitalRead(term1,12,"VL53L0X"),  //12  *zatím neexistuje
+  new SensorDigitalRead(term1,13,"InfraredR"),//13  *zatím neexistuje
+  new SensorDigitalRead(term1,14,"InfraredE"),//14  *zatím neexistuje
+  new SensorDigitalRead(term1,15,"Dntc"),     //15
+  new Antc(term1),                            //16
+  new PHresistance(term2),                    //17
+  new Joystick(VRx,VRy,sw),                   //18
+  new HallLin(term2),                         //19
+  new SensorDigitalRead(term1,20,"MQ135"),    //20
+  new SensorDigitalRead(term1,21,"IndPNP"),   //21
+  new SensorDigitalRead(term1,22,"IndNPN"),   //22
+  new SensorDigitalRead(term1,23,"DMoisture"),//23
+  new SensorDigitalRead(term1,24,"AMoisture"),//24  *zatím neexistuje
+  new SensorDigitalRead(term1,25,"TTP223"),   //25
+  new SensorDigitalRead(term1,26,"AJSR04M"),  //26  *zatím neexistuje
+  new GP2Y0A21YK0F(term1),                    //27
+  new SensorDigitalRead(term1,28,"RCWL0516"), //28
+  new SensorDigitalRead(term1,29,"Encoder"),  //29  *zatím neexistuje
+  new SensorDigitalRead(term1,30,"HS0038DB"), //30
+  new SensorDigitalRead(term1,31,"TCRT5000"), //31
+  new SensorDigitalRead(term1,32,"IRflame"),  //32
+  new SensorDigitalRead(term1,33,"REED"),     //33
+  new MicSmall(term1, MT),                    //34
+  new MicBig(term1, MT),                      //35
+  new SensorDigitalRead(term1,36,"MetalTouch"), //36
+  new Heartbeat(term2,5000),                    //37 - delka mereni(ms)
+  new SensorDigitalRead(term1,38,"Btn"),        //38
+  new SensorDigitalRead(term1,39,"TiltSwitch"), //39
+  new SensorDigitalRead(term1,40,"Dvibration"), //40
+  new SensorDigitalRead(term1,41,"HGswitch"),   //41
+  new SensorDigitalRead(term1,42,"Tap"),        //42
  
 };
 
@@ -123,11 +126,10 @@ void setup()
   Serial.begin(115200);
   Serial.println("M-TA: Sensor board ready!");
   Serial.setTimeout(0); 
-  //Sensor_BMP180_Init(SDA, SCL);  
-  //Sensor_BMP280_Init(SDA, SCL);
-  Sensor_TCS34725_Init(SDA,SCL);
+
+  tcs.begin(0x29,&I2C);
   dht.begin();
-  Sensor_BMP280_Init(SDA,SCL);
+  bmp.begin(0x76);
 }
 
 String serialBuffer = "";  // buffer pro sestavení celé zprávy
@@ -143,190 +145,76 @@ void loop() {
 
       String type = result[0];
       int sensorID = result[1].toInt();
-      bool ResponseAll = result[4] == "true";
+      bool ResponseAll = result[4];
 
 
       if (type == "UPDATE") {
         SensorUPDATE(sensorID);
-      } else {
-        
+      } 
+      else if (type == "RESET") {
+        if (ResponseAll){
+          SensorRESET_ALL();  
+        } else {SensorRESET(sensorID);}
       }
-      if (type == "RESET") {
-        //SensorRESET(sensorID);
-      } else {
-        
-      }
-      if (type == "INIT") {
-        SensorINIT(sensorID);
-      } else {
-       
-      }
+      else if (type == "INIT") {SensorINIT();}
+      //else if (type == "CONFIG") {SensorCONFIG();}
 
       serialBuffer = "";  // vyprázdní buffer
-    } else {
-      serialBuffer += c;  // zapíše znak
+    } 
+    else {serialBuffer += c;} //zapíše znak
+  }
+
+}
+
+
+//požadavek UPDATE
+void SensorUPDATE(int sensorID){
+    SeznamSenzoru[sensorID]->update();
+}
+
+//požadavek UPDATE_ALL
+void SensorUPDATE_ALL(){
+int PocetSenzoru = sizeof(SeznamSenzoru) / sizeof(SeznamSenzoru[0]); 
+  for (int i = 0; i < PocetSenzoru; i++) {
+    SeznamSenzoru[i]->update();
+  }
+}
+
+
+//požadavek INIT
+void SensorINIT(){
+    int PocetSenzoru = sizeof(SeznamSenzoru) / sizeof(SeznamSenzoru[0]); //velikost pole v bajtech/velikost jednoho prvku = počet senzorů
+    String result = "?";
+
+  for (int i = 0; i < PocetSenzoru; i++) {
+    if (SeznamSenzoru[i]->init()) {
+      result += String(i) + ":" + SeznamSenzoru[i]->getType() + ",";
     }
   }
 
+  //odstraní poslední čárku zprávy
+  if (result.endsWith(",")) {
+    result.remove(result.length() - 1);
+  }
+
+  Serial.println(result);
 }
 
 
-void SensorUPDATE(int sensorID){
-    sensorTable[sensorID]->update();
+//požadavek RESET
+void SensorRESET(int sensorID){
+  SeznamSenzoru[sensorID]->reset();
 }
 
-void SensorINIT(int sensorID){
-  sensorTable[sensorID]->init();
-}
 
-/*
-void SensorUPDATE(int sensorID){
-switch (sensorID) {
-    case 0: // DS18B20
-      Sensor_DS18B20(sensors);
-      break;
-    case 1: // DHT11
-      Sensor_DHT11(oneWire);
-      break;
-    case 2: // DHall Sensor:
-      Sensor_DigitalRead(term2);
-      break;
-    case 3: // AHall Sensor:
-      Sensor_Ahall(term2);
-      break;
-    case 4: // Phinterrupt
-      Sensor_DigitalRead(term2);
-      break;
-    case 5: // GY521
-      Sensor_GY_521();
-      break;
-    case 6: // FC51
-      Sensor_DigitalRead(term2);
-      break;
-    case 7: // HCSR04
-      Sensor_HCSR04(15,7,DISTANCE);  // upravit piny
-      break;
-    case 8: // HCSR501
-      Sensor_DigitalRead(term2);
-      break;
-    case 9: // KW113Z
-      //Sensor_KW113Z();
-      break;
-    case 10: // BMP280
-      //Sensor_GY_BMP280();
-        Sensor_BMP280();
-      break;
-    case 11: // TCS34725
-      Sensor_TCS34725(SDA,SCL);
-      break;
-    case 12: // VL53L0X
-      //Sensor_VL53L0X();
-      break;
-    case 13: // InfraredR
-      //Sensor_InfraredR();
-      break;
-    case 14: // InfraredE     
-      Sensor_BMP180();        // upravit cislovani - provizorni
-      break;
-    case 15: // Dntc
-      Sensor_DigitalRead(term1);
-      break;
-    case 16: // Antc
-      Sensor_Antc(term2);
-      break;
-    case 17: // PIresistance
-      Sensor_PHresistance(term2);
-      break;
-    case 18: // Joystick
-      Sensor_Joystick(VRx,VRy,sw);
-      break;
-    case 19: // HallLin
-      Sensor_HallLin(term1);
-      break;
-    case 20: // MQ135
-      Sensor_DigitalRead(term1);
-      break;
-    case 21: // IndPNP
-      //Sensor_IndPNP();
-      break;
-    case 22: // IndNPN
-      //Sensor_IndNPN();
-      break;
-    case 23: // Dmoisture
-      Sensor_DigitalRead(term1);
-      break;
-    case 24: // AMoisture
-      //Sensor_AMoisture();
-      break;
-    case 25: // TTP223
-      //Sensor_TTP223();
-      break;
-    case 26: // AJSR04M
-      //Sensor_AJSR04M();
-      break;
-    case 27: // GP2Y0A21YK0F
-      Sensor_GP2Y0A21YK0F();
-      break;
-    case 28: // RCWL0516
-      //Sensor_RCWL0516();
-      break;
-    case 29: // Encoder
-      //Sensor_Encoder();
-      break;
-    case 30: // HS0038DB
-      //Sensor_HS0038DB();
-      break;
-    case 31: // TCRT5000
-      //Sensor_TCRT5000();
-      break;
-    case 32: // IRflame
-      Sensor_DigitalRead(term2);
-      break;
-    case 33: // REED
-      Sensor_DigitalRead(term2);
-      break;
-    case 34: // MicSmall
-      Sensor_MicSmall(term1, MT);
-      break;
-    case 35: // MicBig
-      Sensor_MicBig(term1, MT);
-      break;
-    case 36: // MetalTouch
-      Sensor_DigitalRead(term2);
-      break;
-    case 37: // Heartbeat
-      Sensor_Heartbeat(term2, 5000);
-      break;
-    case 38: // Btn
-      Sensor_DigitalRead(term1);
-      break;
-    case 39: // TiltSwitch
-      Sensor_DigitalRead(term1);
-      break;
-    case 40: // Dvibration
-      Sensor_DigitalRead(term1);
-      break;
-    case 41: // HGswitch
-      Sensor_DigitalRead(term1);
-      break;
-    case 42: // Tap
-      Sensor_DigitalRead(term1);
-      break;
-      
-    case 100: // Universal Diagital Input Read; type=DigitalRead&id=100&pinNo=x;
-      Sensor_DigitalRead(term2);
-      break;
-    case 200: // Universal Analog input Read; type=AnalogRead&id=100&pinNo=x;
-      Sensor_AnalogRead(term1);
-      break;
-    default: // If the command is not recognized, do nothing
-      Serial.println("?id=" + String(sensorID) + "&message=NotSupported");
-      sensorID = -1;
-      break;
+
+//požadavek RESET_ALL
+void SensorRESET_ALL(){
+int PocetSenzoru = sizeof(SeznamSenzoru) / sizeof(SeznamSenzoru[0]); 
+  for (int i = 0; i < PocetSenzoru; i++) {
+    SeznamSenzoru[i]->reset();  
   }
 }
-void SensorRESET(int sensorID){
 
-  
-}
-*/
+
+

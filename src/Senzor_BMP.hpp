@@ -4,25 +4,18 @@
 #include <Wire.h>
 #include <Arduino.h>
 
-extern bool Sensor_BMP280_Init(int SDA, int SCL);
-extern void Sensor_BMP280();
+bool BMP280_init(int SDA, int SCL);
+void BMP280_update();
+void BMP280_reset();
 
-class SensorBMP280 : public Sensor {
+class BMP280 : public Sensor {
 public:
-  SensorBMP280(int sda, int scl) :_sda(sda), _scl(scl) {}
+  BMP280(int sda, int scl) :_sda(sda), _scl(scl) {}
 
-  void init() override {
-     
-  }
-
-  void update() override {
-    Sensor_BMP280();                
-  }
-
-  void reset() override {
-   Sensor_BMP280_Init(_sda, _scl);
-  }
-
+  bool init() override {return BMP280_init(_sda, _scl);}
+  void update() override {BMP280_update();}
+  void reset() override {BMP280_reset();}
+  const char* getType() override {return "BMP280";}
 private:
   int _sda, _scl;
   

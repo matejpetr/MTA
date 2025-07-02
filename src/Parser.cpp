@@ -4,7 +4,7 @@
 
 // Funkce pro parsování GET dotazu
 String* parseGET(String queryString) {
-  static String values[5]; // type, id, resolution, pinNo, all
+  static String values[6]; // type, id, resolution, offset, mode, ResponseAll
 
   // Odstranění ? na začátku
   if (queryString.startsWith("?")) {
@@ -15,8 +15,9 @@ String* parseGET(String queryString) {
   values[0] = ""; // type
   values[1] = ""; // id
   values[2] = ""; // resolution
-  values[3] = ""; // pinNo
-  values[4] = "false"; // ResponseAll
+  values[3] = ""; // offset
+  values[4] = ""; // mode
+  values[5] = "false"; // ResponseAll
 
   // Rozdělení na klíč=hodnota páry
   int start = 0;
@@ -34,9 +35,11 @@ String* parseGET(String queryString) {
       if (key == "type") values[0] = value;
       else if (key == "id") values[1] = value;
       else if (key == "resolution") values[2] = value;
-      else if (key == "pinNo") values[3] = value;
+      else if (key == "offset") values[3] = value;
+      else if (key == "mode") values[4] = value;
+     
 
-      if (value.indexOf('*') != -1) values[4] = "true";
+      if (value.indexOf('*') != -1) values[5] = "true";
     }
 
     start = end + 1;

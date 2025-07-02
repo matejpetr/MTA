@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Senzor_PHresistance.hpp"
 
-void Sensor_PHresistance(int pin) {
+void PHresistance_update(int pin) {
 
   int raw = analogRead(pin);
   float voltage = (raw / 4095.0 * 3.3);
@@ -12,3 +12,8 @@ void Sensor_PHresistance(int pin) {
   Serial.println(lux); // intenzita světla v luxech
 }
 
+void PHresistance_reset(){}
+
+bool PHresistance_init(int pin){
+  return (!analogRead(pin)>10000);
+}

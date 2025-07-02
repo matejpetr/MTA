@@ -3,25 +3,20 @@
 #include <arduino.h>
 #include "Sensor.hpp"
 
-void Sensor_Antc(int pin);
+void Antc_update(int pin);
+bool Antc_init(int pin);
+void Antc_reset();
 
 
-class SensorAntc : public Sensor {
+class Antc : public Sensor {
 public:
-  SensorAntc(int pin) :_pin(pin) {}
+  Antc(int pin) :_pin(pin) {}
 
   
-  void update() override {
-    Sensor_Antc(_pin);
-  }
-
-   void reset() override {
-    
-  }
-
-   void init() override {
-    
-  }
+  void update() override {Antc_update(_pin);}
+  void reset() override {Antc_reset();}
+  bool init() override {return Antc_init(_pin);}
+  const char* getType() override {return "Antc";}
 
 private:
   int _pin;

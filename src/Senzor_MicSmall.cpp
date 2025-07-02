@@ -1,15 +1,15 @@
 #include "Senzor_MicSmall.hpp"
 #include <Arduino.h>
+float ref = 100;
 
+void MicSmall_update(int pin,int MT) {
 
-void Sensor_MicSmall(int pin,int MT) {
-
-    float refValue = 100; //referenční hodnota zvuku 
+     //referenční hodnota zvuku 
     float MaxDiff = 0;  // Maximální rozdíl mezi měřeným a referenčním zvukem
     unsigned long StartTime = millis();
     while (millis() - StartTime < MT){      // MT představuje Measuring Time (délka jednoho měření)
         float soundLevel = analogRead(pin);
-        float diff = abs(soundLevel - refValue);  // Absolutní rozdíl
+        float diff = abs(soundLevel - ref);  // Absolutní rozdíl
         if (diff > MaxDiff) MaxDiff = diff;
     }
 
@@ -17,3 +17,10 @@ void Sensor_MicSmall(int pin,int MT) {
     Serial.print(F("?type=MicSmall&id=34&volume=")); 
     Serial.println(volume);
 }
+
+
+bool MicSmall_init(int pin){
+    return (analogRead(pin)<ref);
+}
+void MicSmall_reset(){}
+

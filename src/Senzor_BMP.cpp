@@ -2,10 +2,10 @@
 #include <Adafruit_BMP280.h>
 
 extern TwoWire I2C; 
+extern Adafruit_BMP280 bmp;  // Konstruktor s vlastním TwoWire
 
-Adafruit_BMP280 bmp(&I2C);  // Konstruktor s vlastním TwoWire
 
-bool Sensor_BMP280_Init(int SDA, int SCL) {
+bool BMP280_init(int SDA, int SCL) {
     I2C.begin(SDA, SCL);  
 
     if (!bmp.begin(0x76)) {
@@ -22,9 +22,9 @@ bool Sensor_BMP280_Init(int SDA, int SCL) {
     return true;  
   }
 
-void Sensor_BMP280() {
+void BMP280_update() {
   
-    float cal = 42.8; //kalibrační koeficient - klidně upravit
+    float cal = 42.8; //kalibrační koeficient - NUTNO upravit !!
     float t = bmp.readTemperature();
     //float p = ((bmp.readPressure()+32*100)/100)-7;
     float p = (bmp.readPressure()/100)+cal;    
@@ -34,4 +34,8 @@ void Sensor_BMP280() {
     Serial.print(p);
     Serial.print(F("&altitude="));
     Serial.println(a);
+  }
+
+  void BMP280_reset(){
+    bmp.begin(0x76);  
   }

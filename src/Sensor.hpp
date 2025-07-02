@@ -8,9 +8,10 @@ class Sensor {
   public:
     virtual void update() = 0;
     virtual void reset() {}
-    virtual void init() {}
+    virtual bool init()=0; 
     virtual void config(){}
     virtual ~Sensor() {}
+    virtual const char* getType() = 0;
 };
 
 #endif
