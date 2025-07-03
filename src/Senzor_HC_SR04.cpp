@@ -18,6 +18,9 @@ bool HCSR04_init(int trig, int echo, int limit) {
  return (dist>2);
 }
 
+
 void HCSR04_reset(){}
+
+
 
 
