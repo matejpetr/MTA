@@ -60,7 +60,7 @@ namespace GUI
         private void InitializeChart()
         {
             chart1.Series.Clear();
-            //MTA ! MTA! MTA! MTA! MTA! MTA!  mata
+            //MTA ! MTA! MTA! MTA! MTA! MTA!  mata a vojtik
 
             // Přidání výchozí série (nepoužívá se přímo, ale inicializuje graf)
             Series series = new Series("measuring")
