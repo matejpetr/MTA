@@ -1,6 +1,7 @@
 #include "Senzor_HC_SR04.hpp"
 #include <Arduino.h>
 
+
 void HCSR04_update(int trig, int echo, int limit){
 
   float last_value = 0;
@@ -12,16 +13,9 @@ void HCSR04_update(int trig, int echo, int limit){
 }
 
 bool HCSR04_init(int trig, int echo, int limit) {
-  NewPing sonar(trig, echo, limit);
-
-  int dist1 = sonar.ping_cm();
-  delay(250);  // čekání 250 ms
-  int dist2 = sonar.ping_cm();
-
-  if (dist1 == 0 || dist2 == 0) return false; // neplatné měření
-
-  int diff = abs(dist2 - dist1);
-  return (diff <= 4); //maximální rozdíl 4cm
+ NewPing sonar(trig, echo, limit); 
+ int dist = sonar.ping_cm();   
+ return (dist>2);
 }
 
 void HCSR04_reset(){}
