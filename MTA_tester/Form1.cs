@@ -60,7 +60,7 @@ namespace GUI
         private void InitializeChart()
         {
             chart1.Series.Clear();
-
+            //Radim nas moc bavi 
             // Přidání výchozí série (nepoužívá se přímo, ale inicializuje graf)
             Series series = new Series("measuring")
             {
