@@ -3,8 +3,10 @@
 #include <Adafruit_BMP280.h>
 #include "Parser.hpp"
 #include "Adafruit_TCS34725.h"
+#include"ESP32Servo.h"
 
 
+#include "SG90.hpp"
 #include "Senzor_DS18B20.hpp"
 #include "Senzor_DHT11.hpp"
 #include "Senzor_Ahall.hpp"    
@@ -58,12 +60,13 @@ OneWire oneWire(term1);
 DallasTemperature sensors(&oneWire);
 
 //sběrnice I2C
-TwoWire I2C(0); 
+//extern TwoWire I2C;
+//extern Adafruit_TCS34725 tcs;
 
 DHT dht(term2,DHT11); 
-Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_614MS, TCS34725_GAIN_4X);
+//Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_614MS, TCS34725_GAIN_4X);
 Adafruit_BMP280 bmp(&I2C);
-
+Servo myServo;
 //deklarace funkcí
 
 void SensorUPDATE(int sensorID);
@@ -75,7 +78,7 @@ void SensorRESET_ALL();
 
 
 Sensor* SeznamSenzoru[] = {
-  new DS18B20(&oneWire),                      //0
+  new DS18B20(&sensors),                      //0
   new DHT11x(term2),                          //1
   new SensorDigitalRead(term1,2,"Dhall"),     //2
   new Ahall(term2),                           //3
@@ -124,9 +127,10 @@ Sensor* SeznamSenzoru[] = {
 void setup() 
 {
   Serial.begin(115200);
-  Serial.println("M-TA: Sensor board ready!");
   Serial.setTimeout(0); 
 
+  sensors.begin();
+  I2C.begin(SDA, SCL);
   tcs.begin(0x29,&I2C);
   dht.begin();
   bmp.begin(0x76);

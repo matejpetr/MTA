@@ -23,17 +23,11 @@ void GP2Y0A21YK0F_update(int pin){
 bool GP2Y0A21YK0F_init(int pin) {
   DMSU sharp(pin);
   
-  float first = sharp.read(0);
-  delay(10);
-  float last = sharp.read(0);
+  float ping = sharp.read(0);
 
-  // Rozdíl mezi první a poslední hodnotou
-  float diff = abs(first - last);
-
-  bool inRange = (first >= 20.0 && first <= 80.0); //hodnoty jsou ve správném rozsahu
-  bool stable = (diff < 5.0); //rozdíl mezi hodnotami není moc velký (např. 5 cm)
-
-  return inRange && stable;
+  
+  
+  return (ping<20);
 }
 
 void GP2Y0A21YK0F_reset(){

@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include "Sensor.hpp"
 
-void MicBig_update(int pin, int MT); //pin - A0, MT - Measuring time (ms)
+void MicBig_update(int pin, int MT);
 bool MicBig_init(int pin);
 void MicBig_reset();
 

@@ -1,6 +1,6 @@
 #include "Senzor_MicSmall.hpp"
 #include <Arduino.h>
-float ref = 100;
+float ref = 50;
 
 void MicSmall_update(int pin,int MT) {
 
@@ -15,12 +15,13 @@ void MicSmall_update(int pin,int MT) {
 
     float volume = 20.0 * log10(MaxDiff + 1); // Převod na decibely
     Serial.print(F("?type=MicSmall&id=34&volume=")); 
-    Serial.println(volume);
+    //Serial.println(volume);
+    Serial.println(analogRead(pin));
 }
 
 
 bool MicSmall_init(int pin){
-    return (analogRead(pin)<ref);
+    return (analogRead(pin)>ref);
 }
 void MicSmall_reset(){}
 

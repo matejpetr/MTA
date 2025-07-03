@@ -1,6 +1,6 @@
 #include "Senzor_MicBig.hpp"
 #include <Arduino.h>
-float refValue = 200;
+float refValue = 50;
 
 void MicBig_update(int pin, int MT) {
     
@@ -15,12 +15,14 @@ void MicBig_update(int pin, int MT) {
 
     float volume = 20.0 * log10(MaxDiff + 1); // Převod na decibely
      Serial.print(F("?type=MicBig&id=35&volume=")); 
-     Serial.println(volume);
-    
+     //Serial.println(volume);
+    Serial.println(analogRead(pin));
 }
 
 void MicBig_reset(){}
 
 bool MicBig_init(int pin){
-    return (analogRead(pin)<refValue);
+    return (analogRead(pin)>50);
 }
+    
+

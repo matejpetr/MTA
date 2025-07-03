@@ -20,15 +20,17 @@ void Joystick_update(int x, int y, int sw) {
                        "CENTER";   
 
     Serial.print(F("?type=Joystick&id=18&direction="));
-    Serial.println(direction);
+    Serial.println(xValue);
+    Serial.println("");
+    Serial.println(yValue);
 }
 
 bool Joystick_init(int x, int y) {
   int xValue = analogRead(x);
   int yValue = analogRead(y);
 
-  return (xValue >= 2850 && xValue <= 3000) &&
-         (yValue >= 2850 && yValue <= 3000);
+  return (xValue >= 2000 && xValue <= 3000) &&
+         (yValue >= 2000 && yValue <= 3000);
 }
 
 

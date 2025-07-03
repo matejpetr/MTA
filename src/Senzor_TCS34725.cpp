@@ -3,8 +3,9 @@
 #include "Senzor_TCS34725.hpp"
 
 
-extern Adafruit_TCS34725 tcs;
-extern TwoWire I2C; 
+TwoWire I2C(0);  
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_614MS,TCS34725_GAIN_4X);
+
 
 bool TCS34725_init(int SDA, int SCL) {
   I2C.begin(SDA, SCL);       

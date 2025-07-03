@@ -7,19 +7,14 @@ extern Adafruit_BMP280 bmp;  // Konstruktor s vlastním TwoWire
 
 bool BMP280_init(int SDA, int SCL) {
     I2C.begin(SDA, SCL);  
-
-    if (!bmp.begin(0x76)) {
-        return false;
-    }
-  
-       bmp.setSampling(
+        bmp.setSampling(
         Adafruit_BMP280::MODE_NORMAL,
         Adafruit_BMP280::SAMPLING_X2,
         Adafruit_BMP280::SAMPLING_X16,
         Adafruit_BMP280::FILTER_X16,
         Adafruit_BMP280::STANDBY_MS_500);
 
-    return true;  
+    return (bmp.begin(0x76));  
   }
 
 void BMP280_update() {
