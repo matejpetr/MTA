@@ -15,13 +15,8 @@ void TwoColorMini_config(int pinRed, int pinGreen, char color, int Brightness) {
   int pwmValue = map(Brightness, 0, 100, 0, 255);
 
   // Inverze PWM pro společnou anodu KY-029
-  pwmValue = 255 - pwmValue;
+  //pwmValue = 255 - pwmValue;
 
-  // Vypnutí obou barev před zapnutím
-  analogWrite(pinR, 255);
-  analogWrite(pinG, 255);
-
-  
     if (color == 'r' || color == 'R') {
       analogWrite(pinR, pwmValue);
     } else if (color == 'g' || color == 'G') {

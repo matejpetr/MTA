@@ -1,27 +1,57 @@
 #include "Parser.hpp"
-#include <Arduino.h>
 
+// Statické pole pro výsledky (max 10 parametrů)
+static Param parsedParams[10];  // Uprav počet dle potřeby
 
-// Funkce pro parsování GET dotazu
+// --- GET dotaz (senzory) ---
 String* parseGET(String queryString) {
-  static String values[6]; // type, id, resolution, offset, mode, ResponseAll
+    static String values[3]; // type, id, ResponseAll
 
-  // Odstranění ? na začátku
+    if (queryString.startsWith("?")) {
+        queryString.remove(0, 1);
+    }
+
+    values[0] = ""; // type
+    values[1] = ""; // id
+    values[2] = "false"; // ResponseAll
+
+    int start = 0;
+    while (start < queryString.length()) {
+        int end = queryString.indexOf('&', start);
+        if (end == -1) end = queryString.length();
+
+        String pair = queryString.substring(start, end);
+        int delimiter = pair.indexOf('=');
+
+        if (delimiter != -1) {
+            String key = pair.substring(0, delimiter);
+            String value = pair.substring(delimiter + 1);
+
+            if (key == "type") values[0] = value;
+            else if (key == "id") values[1] = value;
+
+            if (value.indexOf('*') != -1) values[2] = "true";
+        }
+
+        start = end + 1;
+    }
+
+    return values;
+}
+
+
+
+
+// --- Config parametry (aktuátory+senzory) ---
+Param* parseKeyValueParams(String queryString, int& count) {
+  count = 0;
+
   if (queryString.startsWith("?")) {
     queryString.remove(0, 1);
   }
 
-  // Inicializace
-  values[0] = ""; // type
-  values[1] = ""; // id
-  values[2] = ""; // resolution
-  values[3] = ""; // offset
-  values[4] = ""; // mode
-  values[5] = "false"; // ResponseAll
-
-  // Rozdělení na klíč=hodnota páry
   int start = 0;
-  while (start < queryString.length()) {
+  while (start < queryString.length() && count < 10) {
     int end = queryString.indexOf('&', start);
     if (end == -1) end = queryString.length();
 
@@ -32,18 +62,15 @@ String* parseGET(String queryString) {
       String key = pair.substring(0, delimiter);
       String value = pair.substring(delimiter + 1);
 
-      if (key == "type") values[0] = value;
-      else if (key == "id") values[1] = value;
-      else if (key == "resolution") values[2] = value;
-      else if (key == "offset") values[3] = value;
-      else if (key == "mode") values[4] = value;
-     
-
-      if (value.indexOf('*') != -1) values[5] = "true";
+      if (key != "type" && key != "id") {
+        parsedParams[count].key = key;
+        parsedParams[count].value = value;
+        count++;
+      }
     }
 
     start = end + 1;
   }
 
-  return values;
+  return parsedParams;
 }

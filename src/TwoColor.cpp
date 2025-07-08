@@ -14,16 +14,12 @@ void TwoColor_config(int pinRed, int pinGreen, char color, int Brightness) {
   Brightness = constrain(Brightness, 0, 100);
   int pwmValue = map(Brightness, 0, 100, 0, 255);
 
-  // Vypnutí obou barev před zapnutím požadované
-  analogWrite(pinR, 0);
-  analogWrite(pinG, 0);
-
   
-    if (color == 'r' || color == 'R') {
-      analogWrite(pinR, pwmValue);
-    } else if (color == 'g' || color == 'G') {
-      analogWrite(pinG, pwmValue);
-    }
+  if (color == 'r' || color == 'R') {
+    analogWrite(pinR, pwmValue);
+  } else if (color == 'g' || color == 'G') {
+    analogWrite(pinG, pwmValue);
+  }
   
 }
 

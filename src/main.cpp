@@ -95,6 +95,10 @@ void SensorRESET(int sensorID);
 void SensorRESET_ALL();
 //void SensorCONFIG(int sensorID); */
 
+void ActuatorRESET_ALL();
+void ActuatorRESET(String id);
+
+
 
 Sensor* SeznamSenzoru[] = {
   new DS18B20(&sensors),                      //0
@@ -143,19 +147,24 @@ Sensor* SeznamSenzoru[] = {
  
 };
 
+//velikost pole v bajtech/velikost jednoho prvku = počet senzorů
+int PocetSenzoru = sizeof(SeznamSenzoru) / sizeof(SeznamSenzoru[0]); 
+
 Actuator* SeznamAktuatoru[] = {
-new SG90(term1,42,100), //100 
-new Stepper(term1,term2,term3,term4,42,true,16), //101
-new DC(term1,50,true), //102
-new TwoColor(term1,term2,'R',50),
-new TwoColorMini(term1,term2,'G',100),  //103
-new RGB(term1,term2,term3,0,0,50),      //104
+new SG90(term1,42,100), 
+new Stepper(term1,term2,term3,term4,42,true,16), 
+new DC(term1,50,true), 
+new TwoColor(term3,term4,'R',50),
+new TwoColorMini(term4,term3,'G',100), 
+new RGB(term1,term2,term3,0,0,50),      
 new Color7(term1,true),
 new Laser(term1,true),
 new BuzzP(term1,1000,500),
 new BuzzA(term1,true),
 };
 
+//velikost pole v bajtech/velikost jednoho prvku = počet aktuátorů
+int PocetAktuatoru =sizeof(SeznamAktuatoru)/sizeof(SeznamAktuatoru[0]);
 
 void setup() 
 {
@@ -168,40 +177,83 @@ void setup()
   tcs.begin(0x29,&I2C);
   dht.begin();
   bmp.begin(0x76);
+  myServo.attach(term1);
 }
 
 String serialBuffer = "";  // buffer pro sestavení celé zprávy
 
 
 void loop() {
-  if (Serial.available()) {
+if (Serial.available()) {
     char c = Serial.read();
-
     if (c == '\n') {
       serialBuffer.trim();
       String* result = parseGET(serialBuffer);
 
       String type = result[0];
-      int sensorID = result[1].toInt();
-      bool ResponseAll = result[4];
+      String idStr = result[1];
+      bool ResponseAll = (result[2] == "true");
+      int index = toupper(idStr[0]) - 'A';
 
 
       if (type == "UPDATE") {
-        SensorUPDATE(sensorID);
-      } 
-      else if (type == "RESET") {
-        if (ResponseAll){
-          SensorRESET_ALL();  
-        } else {SensorRESET(sensorID);}
+        if (ResponseAll) {
+          SensorUPDATE_ALL();
+        } else {
+          int id = idStr.toInt();
+          if (id >= 0 && id < PocetSenzoru) {
+            SeznamSenzoru[id]->update();
+          }
+        }
       }
-      else if (type == "INIT") {SensorINIT();}
-      //else if (type == "CONFIG") {SensorCONFIG();}
 
-      serialBuffer = "";  // vyprázdní buffer
-    } 
-    else {serialBuffer += c;} //zapíše znak
+      else if (type == "RESET") {
+       if (idStr.length() == 1 && isAlpha(idStr[0])) {
+        if (ResponseAll) {
+          ActuatorRESET_ALL();
+        } else {
+            if (index >= 0 && index < PocetAktuatoru) {
+              SeznamAktuatoru[index]->reset();
+            }
+        }
+          
+       }
+
+       else{
+        if (ResponseAll) {
+          SensorRESET_ALL();
+        } else {
+          int id = idStr.toInt();
+          if (id >= 0 && id < PocetSenzoru) {
+            SeznamSenzoru[id]->reset();
+          }
+        }
+      }
+    }
+
+
+      else if (type == "INIT") {
+        SensorINIT();
+      }
+
+      else if (type == "CONFIG") {
+        int paramCount;
+        Param* params = parseKeyValueParams(serialBuffer, paramCount);
+
+        // Pokud id je písmeno A,B,C,... mapuj na seznam aktuátorů
+        if (idStr.length() == 1 && isAlpha(idStr[0])) {
+          int index = toupper(idStr[0]) - 'A';
+          if (index >= 0 && index < PocetAktuatoru) {
+            SeznamAktuatoru[index]->config(params, paramCount);
+          }
+        }
+      }
+
+      serialBuffer = "";
+    } else {
+      serialBuffer += c;
+    }
   }
-
 }
 
 
@@ -211,8 +263,7 @@ void SensorUPDATE(int sensorID){
 }
 
 //požadavek UPDATE_ALL
-void SensorUPDATE_ALL(){
-int PocetSenzoru = sizeof(SeznamSenzoru) / sizeof(SeznamSenzoru[0]); 
+void SensorUPDATE_ALL(){ 
   for (int i = 0; i < PocetSenzoru; i++) {
     SeznamSenzoru[i]->update();
   }
@@ -221,7 +272,6 @@ int PocetSenzoru = sizeof(SeznamSenzoru) / sizeof(SeznamSenzoru[0]);
 
 //požadavek INIT
 void SensorINIT(){
-    int PocetSenzoru = sizeof(SeznamSenzoru) / sizeof(SeznamSenzoru[0]); //velikost pole v bajtech/velikost jednoho prvku = počet senzorů
     String result = "?";
 
   for (int i = 0; i < PocetSenzoru; i++) {
@@ -248,11 +298,14 @@ void SensorRESET(int sensorID){
 
 //požadavek RESET_ALL
 void SensorRESET_ALL(){
-int PocetSenzoru = sizeof(SeznamSenzoru) / sizeof(SeznamSenzoru[0]); 
   for (int i = 0; i < PocetSenzoru; i++) {
     SeznamSenzoru[i]->reset();  
   }
 }
 
-
+void ActuatorRESET_ALL(){
+ for (int i = 0; i < PocetAktuatoru; i++) {
+    SeznamAktuatoru[i]->reset();
+  }
+}
 
