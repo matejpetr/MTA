@@ -6,7 +6,19 @@
 #include"ESP32Servo.h"
 
 
+#include "Stepper.hpp"
 #include "SG90.hpp"
+#include "DC.hpp"
+#include "TwoColor.hpp"
+#include "TwoColorMini.hpp"
+#include "RGB.hpp"
+#include "7color.hpp"
+#include "Laser.hpp"
+#include "BuzzP.hpp"
+#include "BuzzA.hpp"
+
+
+#include "Senzor_Encoder.hpp"
 #include "Senzor_DS18B20.hpp"
 #include "Senzor_DHT11.hpp"
 #include "Senzor_Ahall.hpp"    
@@ -43,6 +55,9 @@
 #define term1 15  // Číslo pinu (ADC2_05) prvního senzorického terminálu na HW standu (4pinové červené)
 #define term2 7  // Číslo pinu (ADC2_04) druhého senzorického terminálu na HW standu (3pinové černé)
 
+#define term3 4  // Číslo pinu (ADC1_03) 
+#define term4 5  // Číslo pinu (ADC1_04) 
+
 //3v3 i2c
 #define SDA 11
 #define SCL 12
@@ -67,6 +82,10 @@ DHT dht(term2,DHT11);
 //Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_614MS, TCS34725_GAIN_4X);
 Adafruit_BMP280 bmp(&I2C);
 Servo myServo;
+
+
+
+
 //deklarace funkcí
 
 void SensorUPDATE(int sensorID);
@@ -107,7 +126,7 @@ Sensor* SeznamSenzoru[] = {
   new SensorDigitalRead(term1,26,"AJSR04M"),  //26  *zatím neexistuje
   new GP2Y0A21YK0F(term1),                    //27
   new SensorDigitalRead(term1,28,"RCWL0516"), //28
-  new SensorDigitalRead(term1,29,"Encoder"),  //29  *zatím neexistuje
+  new Encoder(term3, term4),                  //29  
   new SensorDigitalRead(term1,30,"HS0038DB"), //30
   new SensorDigitalRead(term1,31,"TCRT5000"), //31
   new SensorDigitalRead(term1,32,"IRflame"),  //32
@@ -124,11 +143,26 @@ Sensor* SeznamSenzoru[] = {
  
 };
 
+Actuator* SeznamAktuatoru[] = {
+new SG90(term1,42,100), //100 
+new Stepper(term1,term2,term3,term4,42,true,16), //101
+new DC(term1,50,true), //102
+new TwoColor(term1,term2,'R',50),
+new TwoColorMini(term1,term2,'G',100),  //103
+new RGB(term1,term2,term3,0,0,50),      //104
+new Color7(term1,true),
+new Laser(term1,true),
+new BuzzP(term1,1000,500),
+new BuzzA(term1,true),
+};
+
+
 void setup() 
 {
   Serial.begin(115200);
   Serial.setTimeout(0); 
 
+  Encoder_init(term3,term4);
   sensors.begin();
   I2C.begin(SDA, SCL);
   tcs.begin(0x29,&I2C);

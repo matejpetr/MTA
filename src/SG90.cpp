@@ -6,12 +6,12 @@
 extern Servo myServo;
 void control(Servo &s, int start, int end, int speedMs);
 
-void SG90_config(int pin,int angle, int delay){
+void SG90_config(int pin,int angle, int speed){
  myServo.attach(pin);
  int pos=myServo.read();
+
+ int delay = map(speed, 0, 100, 100, 0);
  control(myServo, pos, angle, delay);
-
-
 }
 
 

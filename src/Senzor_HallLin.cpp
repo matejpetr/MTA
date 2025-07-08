@@ -9,6 +9,7 @@ void HallLin_update(int pin) {
   Serial.println(voltage); // Napětí (V)
 }
 
+//spatne
 bool HallLin_init(int pin) {
   int raw1 = analogRead(pin);
   float voltage1 = (raw1 / 4095.0) * 3.3;

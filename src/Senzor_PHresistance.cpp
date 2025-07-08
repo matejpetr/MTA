@@ -9,11 +9,15 @@ void PHresistance_update(int pin) {
   float lux = 455.0 * pow(10000.0 / R, 0.68);  //aproximační vzorec (lze kalibrovat)
 
   Serial.print(F("?type=PHresistance&id=17&intensity="));
-  Serial.println(lux); // intenzita světla v luxech
+  //Serial.println(lux); // intenzita světla v luxech
+  Serial.println(analogRead(pin));
 }
 
 void PHresistance_reset(){}
 
+
+//nefunguje spravne
 bool PHresistance_init(int pin){
-  return (!analogRead(pin)>10000);
+  return (analogRead(pin)>1000);   
+
 }
