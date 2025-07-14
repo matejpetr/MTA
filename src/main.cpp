@@ -168,7 +168,7 @@ int PocetAktuatoru =sizeof(SeznamAktuatoru)/sizeof(SeznamAktuatoru[0]);
 
 void setup() 
 {
-  Serial.begin(115200);
+  Serial.begin(9600,24,25);
   Serial.setTimeout(0); 
 
   Encoder_init(term3,term4);
@@ -176,7 +176,7 @@ void setup()
   I2C.begin(SDA, SCL);
   tcs.begin(0x29,&I2C);
   dht.begin();
-  bmp.begin(0x76);
+  bmp.begin(0x76); 
   myServo.attach(term1);
 }
 
