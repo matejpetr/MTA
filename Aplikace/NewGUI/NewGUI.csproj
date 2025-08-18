@@ -224,5 +224,17 @@
   <ItemGroup>
     <None Include="Resources\info2_click.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\half_brain_mini.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\half_brain_mini2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\half_brain_mini3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\half_brain_mini4.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

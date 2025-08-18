@@ -16,13 +16,12 @@ namespace NewGUI
         // --- Animace pro víc tlačítek ---
         private readonly Dictionary<Button, (int progress, int target)> _wipe =
          new Dictionary<Button, (int progress, int target)>();
-        private readonly Dictionary<Button, Image> _origImage = new Dictionary<Button, Image>();
         private Timer _animTimer;
         private int _speedPx = 14;
 
         private Color _baseColor = Color.FromArgb(5, 92, 169);
         private Color _hoverColor = Color.FromArgb(243, 95, 0);  // oranžová
-        private Color _textColor = Color.White;
+        private Color _textColor = Color.White;             // barva pro symboly
 
         public Form1()
         {
@@ -84,7 +83,7 @@ namespace NewGUI
             Main_panel.Controls.Add(novyObsah);
         }
 
-        private void AttachWipeAnimation(Button btn, Image OrangeImage, Panel hostPanel = null, Label ClickLabel = null)
+        private void AttachWipeAnimation(Button btn, Image OrangeImage, Panel hostPanel = null)
         {
             if (!_wipe.ContainsKey(btn))
                 _wipe.Add(btn, (0, 0));
