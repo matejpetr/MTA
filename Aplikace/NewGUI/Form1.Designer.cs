@@ -31,25 +31,25 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.sidebar = new System.Windows.Forms.FlowLayoutPanel();
-            this.home_panel = new System.Windows.Forms.Panel();
-            this.setttings_panel = new System.Windows.Forms.Panel();
-            this.help_panel = new System.Windows.Forms.Panel();
-            this.info_panel = new System.Windows.Forms.Panel();
-            this.sidebar_timer = new System.Windows.Forms.Timer(this.components);
-            this.Main_panel = new System.Windows.Forms.Panel();
             this.menu_panel = new System.Windows.Forms.Panel();
             this.menu_button = new System.Windows.Forms.PictureBox();
+            this.home_panel = new System.Windows.Forms.Panel();
             this.home_button = new System.Windows.Forms.Button();
+            this.setttings_panel = new System.Windows.Forms.Panel();
             this.setting_button = new System.Windows.Forms.Button();
+            this.help_panel = new System.Windows.Forms.Panel();
             this.help_button = new System.Windows.Forms.Button();
+            this.info_panel = new System.Windows.Forms.Panel();
             this.info_button = new System.Windows.Forms.Button();
+            this.sidebar_timer = new System.Windows.Forms.Timer(this.components);
+            this.Main_panel = new System.Windows.Forms.Panel();
             this.sidebar.SuspendLayout();
+            this.menu_panel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.menu_button)).BeginInit();
             this.home_panel.SuspendLayout();
             this.setttings_panel.SuspendLayout();
             this.help_panel.SuspendLayout();
             this.info_panel.SuspendLayout();
-            this.menu_panel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.menu_button)).BeginInit();
             this.SuspendLayout();
             // 
             // sidebar
@@ -68,50 +68,6 @@
             this.sidebar.Name = "sidebar";
             this.sidebar.Size = new System.Drawing.Size(175, 450);
             this.sidebar.TabIndex = 0;
-            // 
-            // home_panel
-            // 
-            this.home_panel.Controls.Add(this.home_button);
-            this.home_panel.Location = new System.Drawing.Point(3, 70);
-            this.home_panel.Name = "home_panel";
-            this.home_panel.Size = new System.Drawing.Size(200, 48);
-            this.home_panel.TabIndex = 1;
-            // 
-            // setttings_panel
-            // 
-            this.setttings_panel.Controls.Add(this.setting_button);
-            this.setttings_panel.Location = new System.Drawing.Point(3, 124);
-            this.setttings_panel.Name = "setttings_panel";
-            this.setttings_panel.Size = new System.Drawing.Size(200, 48);
-            this.setttings_panel.TabIndex = 3;
-            // 
-            // help_panel
-            // 
-            this.help_panel.Controls.Add(this.help_button);
-            this.help_panel.Location = new System.Drawing.Point(3, 178);
-            this.help_panel.Name = "help_panel";
-            this.help_panel.Size = new System.Drawing.Size(200, 48);
-            this.help_panel.TabIndex = 3;
-            // 
-            // info_panel
-            // 
-            this.info_panel.Controls.Add(this.info_button);
-            this.info_panel.Location = new System.Drawing.Point(3, 232);
-            this.info_panel.Name = "info_panel";
-            this.info_panel.Size = new System.Drawing.Size(200, 48);
-            this.info_panel.TabIndex = 3;
-            // 
-            // sidebar_timer
-            // 
-            this.sidebar_timer.Interval = 10;
-            this.sidebar_timer.Tick += new System.EventHandler(this.sidebar_timer_Tick);
-            // 
-            // Main_panel
-            // 
-            this.Main_panel.Location = new System.Drawing.Point(166, 0);
-            this.Main_panel.Name = "Main_panel";
-            this.Main_panel.Size = new System.Drawing.Size(633, 450);
-            this.Main_panel.TabIndex = 1;
             // 
             // menu_panel
             // 
@@ -135,6 +91,14 @@
             this.menu_button.TabStop = false;
             this.menu_button.Click += new System.EventHandler(this.menu_button_Click);
             // 
+            // home_panel
+            // 
+            this.home_panel.Controls.Add(this.home_button);
+            this.home_panel.Location = new System.Drawing.Point(3, 70);
+            this.home_panel.Name = "home_panel";
+            this.home_panel.Size = new System.Drawing.Size(200, 48);
+            this.home_panel.TabIndex = 1;
+            // 
             // home_button
             // 
             this.home_button.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -152,6 +116,14 @@
             this.home_button.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.home_button.UseVisualStyleBackColor = true;
             this.home_button.Click += new System.EventHandler(this.home_button_Click);
+            // 
+            // setttings_panel
+            // 
+            this.setttings_panel.Controls.Add(this.setting_button);
+            this.setttings_panel.Location = new System.Drawing.Point(3, 124);
+            this.setttings_panel.Name = "setttings_panel";
+            this.setttings_panel.Size = new System.Drawing.Size(200, 48);
+            this.setttings_panel.TabIndex = 3;
             // 
             // setting_button
             // 
@@ -171,6 +143,14 @@
             this.setting_button.UseVisualStyleBackColor = true;
             this.setting_button.Click += new System.EventHandler(this.setting_button_Click);
             // 
+            // help_panel
+            // 
+            this.help_panel.Controls.Add(this.help_button);
+            this.help_panel.Location = new System.Drawing.Point(3, 178);
+            this.help_panel.Name = "help_panel";
+            this.help_panel.Size = new System.Drawing.Size(200, 48);
+            this.help_panel.TabIndex = 3;
+            // 
             // help_button
             // 
             this.help_button.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -189,6 +169,14 @@
             this.help_button.UseVisualStyleBackColor = true;
             this.help_button.Click += new System.EventHandler(this.help_button_Click);
             // 
+            // info_panel
+            // 
+            this.info_panel.Controls.Add(this.info_button);
+            this.info_panel.Location = new System.Drawing.Point(3, 232);
+            this.info_panel.Name = "info_panel";
+            this.info_panel.Size = new System.Drawing.Size(200, 48);
+            this.info_panel.TabIndex = 3;
+            // 
             // info_button
             // 
             this.info_button.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -202,28 +190,39 @@
             this.info_button.Padding = new System.Windows.Forms.Padding(30, 0, 0, 0);
             this.info_button.Size = new System.Drawing.Size(234, 68);
             this.info_button.TabIndex = 2;
-            this.info_button.Text = "          Informace";
+            this.info_button.Text = "          O nás";
             this.info_button.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.info_button.UseVisualStyleBackColor = true;
             this.info_button.Click += new System.EventHandler(this.info_button_Click);
+            // 
+            // sidebar_timer
+            // 
+            this.sidebar_timer.Interval = 10;
+            // 
+            // Main_panel
+            // 
+            this.Main_panel.Location = new System.Drawing.Point(166, 0);
+            this.Main_panel.Name = "Main_panel";
+            this.Main_panel.Size = new System.Drawing.Size(666, 450);
+            this.Main_panel.TabIndex = 1;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(833, 450);
             this.Controls.Add(this.sidebar);
             this.Controls.Add(this.Main_panel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "Moravskoslezská technologická akademie";
             this.sidebar.ResumeLayout(false);
+            this.menu_panel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.menu_button)).EndInit();
             this.home_panel.ResumeLayout(false);
             this.setttings_panel.ResumeLayout(false);
             this.help_panel.ResumeLayout(false);
             this.info_panel.ResumeLayout(false);
-            this.menu_panel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.menu_button)).EndInit();
             this.ResumeLayout(false);
 
         }

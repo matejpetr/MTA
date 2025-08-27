@@ -31,7 +31,7 @@ namespace NewGUI
 
         private int targetHeight = 0;   // cílová výška detailPanelu (0 nebo ExpandedHeight)
         private int currentHeight = 0;  // aktuální výška pro animaci
-        private int speed = 25;         // pixely na tick
+        private int speed = 15;         // pixely na tick
         public int ExpandedHeight { get; set; } = 130;  // kolik se má vysunout
         private readonly Color hoverOverlay = Color.FromArgb(243, 95, 0);
         private readonly Color textNormal = Color.White;

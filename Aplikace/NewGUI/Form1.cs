@@ -43,7 +43,7 @@ namespace NewGUI
         {
             sidebar_timer.Start();
         }
-
+         /*
         private void sidebar_timer_Tick(object sender, EventArgs e)
         {
             int CurrentLOC = Main_panel.Location.X;
@@ -75,7 +75,7 @@ namespace NewGUI
             }
 
         }
-
+         */
         public void NahraditObsah(UserControl novyObsah)
         {
             Main_panel.Controls.Clear();
@@ -217,7 +217,13 @@ namespace NewGUI
 
         private void info_button_Click(object sender, EventArgs e)
         {
-            NahraditObsah(new Info());
+            //NahraditObsah(new Info());
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "https://m-ta.cz/",
+                UseShellExecute = true
+            };
+            System.Diagnostics.Process.Start(psi);
         }
 
         

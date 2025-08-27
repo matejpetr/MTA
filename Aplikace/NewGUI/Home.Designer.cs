@@ -42,7 +42,7 @@
             // Simulator_panel
             // 
             this.Simulator_panel.Controls.Add(this.Simulator_button);
-            this.Simulator_panel.Location = new System.Drawing.Point(411, 3);
+            this.Simulator_panel.Location = new System.Drawing.Point(418, 14);
             this.Simulator_panel.Name = "Simulator_panel";
             this.Simulator_panel.Size = new System.Drawing.Size(173, 336);
             this.Simulator_panel.TabIndex = 3;
@@ -66,7 +66,7 @@
             // Sensor_panel
             // 
             this.Sensor_panel.Controls.Add(this.Sensor_button);
-            this.Sensor_panel.Location = new System.Drawing.Point(232, 3);
+            this.Sensor_panel.Location = new System.Drawing.Point(239, 14);
             this.Sensor_panel.Name = "Sensor_panel";
             this.Sensor_panel.Size = new System.Drawing.Size(173, 336);
             this.Sensor_panel.TabIndex = 2;
@@ -90,7 +90,7 @@
             // Aktuatory_panel
             // 
             this.Aktuatory_panel.Controls.Add(this.Aktuatory_button);
-            this.Aktuatory_panel.Location = new System.Drawing.Point(53, 3);
+            this.Aktuatory_panel.Location = new System.Drawing.Point(60, 14);
             this.Aktuatory_panel.Name = "Aktuatory_panel";
             this.Aktuatory_panel.Size = new System.Drawing.Size(173, 336);
             this.Aktuatory_panel.TabIndex = 4;
@@ -120,7 +120,7 @@
             this.Controls.Add(this.Sensor_panel);
             this.Controls.Add(this.Aktuatory_panel);
             this.Name = "Home";
-            this.Size = new System.Drawing.Size(714, 462);
+            this.Size = new System.Drawing.Size(666, 450);
             this.Simulator_panel.ResumeLayout(false);
             this.Sensor_panel.ResumeLayout(false);
             this.Aktuatory_panel.ResumeLayout(false);
