@@ -28,41 +28,71 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.Sensor_panel = new System.Windows.Forms.Panel();
             this.Simulator_panel = new System.Windows.Forms.Panel();
+            this.Simulator_button = new System.Windows.Forms.Button();
+            this.Sensor_panel = new System.Windows.Forms.Panel();
+            this.Sensor_button = new System.Windows.Forms.Button();
             this.Aktuatory_panel = new System.Windows.Forms.Panel();
             this.Aktuatory_button = new System.Windows.Forms.Button();
-            this.Simulator_button = new System.Windows.Forms.Button();
-            this.Sensor_button = new System.Windows.Forms.Button();
-            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
-            this.Sensor_panel.SuspendLayout();
             this.Simulator_panel.SuspendLayout();
+            this.Sensor_panel.SuspendLayout();
             this.Aktuatory_panel.SuspendLayout();
-            this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // Sensor_panel
-            // 
-            this.Sensor_panel.Controls.Add(this.Sensor_button);
-            this.Sensor_panel.Location = new System.Drawing.Point(182, 3);
-            this.Sensor_panel.Name = "Sensor_panel";
-            this.Sensor_panel.Size = new System.Drawing.Size(173, 130);
-            this.Sensor_panel.TabIndex = 2;
             // 
             // Simulator_panel
             // 
             this.Simulator_panel.Controls.Add(this.Simulator_button);
-            this.Simulator_panel.Location = new System.Drawing.Point(361, 3);
+            this.Simulator_panel.Location = new System.Drawing.Point(411, 3);
             this.Simulator_panel.Name = "Simulator_panel";
-            this.Simulator_panel.Size = new System.Drawing.Size(173, 130);
+            this.Simulator_panel.Size = new System.Drawing.Size(173, 336);
             this.Simulator_panel.TabIndex = 3;
+            // 
+            // Simulator_button
+            // 
+            this.Simulator_button.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(218)))), ((int)(((byte)(215)))));
+            this.Simulator_button.Font = new System.Drawing.Font("Bahnschrift", 25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.Simulator_button.Image = global::NewGUI.Properties.Resources.half_brain_mini3;
+            this.Simulator_button.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.Simulator_button.Location = new System.Drawing.Point(-6, -7);
+            this.Simulator_button.Name = "Simulator_button";
+            this.Simulator_button.Size = new System.Drawing.Size(187, 150);
+            this.Simulator_button.TabIndex = 1;
+            this.Simulator_button.Text = "Simulator";
+            this.Simulator_button.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.Simulator_button.UseMnemonic = false;
+            this.Simulator_button.UseVisualStyleBackColor = false;
+            this.Simulator_button.Click += new System.EventHandler(this.Simulator_button_Click);
+            // 
+            // Sensor_panel
+            // 
+            this.Sensor_panel.Controls.Add(this.Sensor_button);
+            this.Sensor_panel.Location = new System.Drawing.Point(232, 3);
+            this.Sensor_panel.Name = "Sensor_panel";
+            this.Sensor_panel.Size = new System.Drawing.Size(173, 336);
+            this.Sensor_panel.TabIndex = 2;
+            // 
+            // Sensor_button
+            // 
+            this.Sensor_button.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(218)))), ((int)(((byte)(215)))));
+            this.Sensor_button.Font = new System.Drawing.Font("Bahnschrift", 25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.Sensor_button.Image = global::NewGUI.Properties.Resources.half_brain_mini3;
+            this.Sensor_button.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.Sensor_button.Location = new System.Drawing.Point(-6, -7);
+            this.Sensor_button.Name = "Sensor_button";
+            this.Sensor_button.Size = new System.Drawing.Size(187, 150);
+            this.Sensor_button.TabIndex = 1;
+            this.Sensor_button.Text = "Senzory";
+            this.Sensor_button.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.Sensor_button.UseMnemonic = false;
+            this.Sensor_button.UseVisualStyleBackColor = false;
+            this.Sensor_button.Click += new System.EventHandler(this.Sensor_button_Click);
             // 
             // Aktuatory_panel
             // 
             this.Aktuatory_panel.Controls.Add(this.Aktuatory_button);
-            this.Aktuatory_panel.Location = new System.Drawing.Point(3, 3);
+            this.Aktuatory_panel.Location = new System.Drawing.Point(53, 3);
             this.Aktuatory_panel.Name = "Aktuatory_panel";
-            this.Aktuatory_panel.Size = new System.Drawing.Size(173, 130);
+            this.Aktuatory_panel.Size = new System.Drawing.Size(173, 336);
             this.Aktuatory_panel.TabIndex = 4;
             // 
             // Aktuatory_button
@@ -81,72 +111,30 @@
             this.Aktuatory_button.UseVisualStyleBackColor = false;
             this.Aktuatory_button.Click += new System.EventHandler(this.Aktuatory_button_Click);
             // 
-            // Simulator_button
-            // 
-            this.Simulator_button.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(218)))), ((int)(((byte)(215)))));
-            this.Simulator_button.Font = new System.Drawing.Font("Bahnschrift", 25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.Simulator_button.Image = global::NewGUI.Properties.Resources.half_brain_mini3;
-            this.Simulator_button.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.Simulator_button.Location = new System.Drawing.Point(-6, -7);
-            this.Simulator_button.Name = "Simulator_button";
-            this.Simulator_button.Size = new System.Drawing.Size(187, 150);
-            this.Simulator_button.TabIndex = 1;
-            this.Simulator_button.Text = "Simulator";
-            this.Simulator_button.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.Simulator_button.UseMnemonic = false;
-            this.Simulator_button.UseVisualStyleBackColor = false;
-            this.Simulator_button.Click += new System.EventHandler(this.Simulator_button_Click);
-            // 
-            // Sensor_button
-            // 
-            this.Sensor_button.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(218)))), ((int)(((byte)(215)))));
-            this.Sensor_button.Font = new System.Drawing.Font("Bahnschrift", 25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.Sensor_button.Image = global::NewGUI.Properties.Resources.half_brain_mini3;
-            this.Sensor_button.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.Sensor_button.Location = new System.Drawing.Point(-6, -7);
-            this.Sensor_button.Name = "Sensor_button";
-            this.Sensor_button.Size = new System.Drawing.Size(187, 150);
-            this.Sensor_button.TabIndex = 1;
-            this.Sensor_button.Text = "Senzory";
-            this.Sensor_button.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.Sensor_button.UseMnemonic = false;
-            this.Sensor_button.UseVisualStyleBackColor = false;
-            this.Sensor_button.Click += new System.EventHandler(this.Sensor_button_Click);
-            // 
-            // flowLayoutPanel1
-            // 
-            this.flowLayoutPanel1.Controls.Add(this.Aktuatory_panel);
-            this.flowLayoutPanel1.Controls.Add(this.Sensor_panel);
-            this.flowLayoutPanel1.Controls.Add(this.Simulator_panel);
-            this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(538, 136);
-            this.flowLayoutPanel1.TabIndex = 5;
-            // 
             // Home
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.Controls.Add(this.flowLayoutPanel1);
+            this.Controls.Add(this.Simulator_panel);
+            this.Controls.Add(this.Sensor_panel);
+            this.Controls.Add(this.Aktuatory_panel);
             this.Name = "Home";
-            this.Size = new System.Drawing.Size(538, 381);
-            this.Sensor_panel.ResumeLayout(false);
+            this.Size = new System.Drawing.Size(714, 462);
             this.Simulator_panel.ResumeLayout(false);
+            this.Sensor_panel.ResumeLayout(false);
             this.Aktuatory_panel.ResumeLayout(false);
-            this.flowLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
 
         #endregion
-        private System.Windows.Forms.Panel Sensor_panel;
-        private System.Windows.Forms.Button Sensor_button;
+
         private System.Windows.Forms.Panel Simulator_panel;
         private System.Windows.Forms.Button Simulator_button;
+        private System.Windows.Forms.Panel Sensor_panel;
+        private System.Windows.Forms.Button Sensor_button;
         private System.Windows.Forms.Panel Aktuatory_panel;
         private System.Windows.Forms.Button Aktuatory_button;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
     }
 }

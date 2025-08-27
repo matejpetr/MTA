@@ -111,6 +111,12 @@
     <Compile Include="Simulator.Designer.cs">
       <DependentUpon>Simulator.cs</DependentUpon>
     </Compile>
+    <Compile Include="Tlacitka.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Tlacitka.Designer.cs">
+      <DependentUpon>Tlacitka.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Aktuatory.resx">
       <DependentUpon>Aktuatory.cs</DependentUpon>
     </EmbeddedResource>
