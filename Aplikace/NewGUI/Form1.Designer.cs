@@ -213,7 +213,9 @@
             this.ClientSize = new System.Drawing.Size(833, 450);
             this.Controls.Add(this.sidebar);
             this.Controls.Add(this.Main_panel);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "Moravskoslezská technologická akademie";
             this.sidebar.ResumeLayout(false);
