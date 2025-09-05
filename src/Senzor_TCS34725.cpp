@@ -1,3 +1,4 @@
+#include <Setup.hpp>
 #include <Wire.h>
 #include "Adafruit_TCS34725.h"
 #include "Senzor_TCS34725.hpp"
@@ -16,6 +17,33 @@ bool TCS34725_init(int SDA, int SCL) {
   return true;
 } 
 
+void TCS34725_config(int itime, int gain) {
+    uint8_t itime_enum;
+
+  switch (itime) {
+    case 2:   itime_enum = TCS34725_INTEGRATIONTIME_2_4MS; break;
+    case 50:  itime_enum = TCS34725_INTEGRATIONTIME_50MS; break;
+    case 101: itime_enum = TCS34725_INTEGRATIONTIME_101MS; break;
+    case 199: itime_enum = TCS34725_INTEGRATIONTIME_199MS; break;
+    case 300: itime_enum = TCS34725_INTEGRATIONTIME_300MS; break;
+    case 401: itime_enum = TCS34725_INTEGRATIONTIME_401MS; break;
+    case 499: itime_enum = TCS34725_INTEGRATIONTIME_499MS; break;
+    case 600: itime_enum = TCS34725_INTEGRATIONTIME_600MS; break;
+    default:  itime_enum = TCS34725_INTEGRATIONTIME_600MS; break;
+  }
+
+  tcs.setIntegrationTime(itime_enum);
+
+  switch (gain) {
+    case 1: tcs.setGain(TCS34725_GAIN_1X); break;
+    case 4: tcs.setGain(TCS34725_GAIN_4X); break;
+    case 16: tcs.setGain(TCS34725_GAIN_16X); break;
+    case 60: tcs.setGain(TCS34725_GAIN_60X); break;
+    default: tcs.setGain(TCS34725_GAIN_4X); break;
+  }
+}
+
+
 
 void TCS34725_update() {
   uint16_t r, g, b, c;
@@ -28,9 +56,9 @@ void TCS34725_update() {
   float b_norm = (float)b / (c + 1);
 
   // Korekční koeficienty senzoru (přibližné)
-  const float R_CORR = 0.6;   
-  const float G_CORR = 1.0;   
-  const float B_CORR = 1.4;   
+  const float R_CORR = 0.7;   
+  const float G_CORR = 1.1;   
+  const float B_CORR = 1.7;   
 
   r_norm *= R_CORR;
   g_norm *= G_CORR;
@@ -48,13 +76,9 @@ void TCS34725_update() {
   uint8_t g8 = constrain(g_norm * 255.0, 0, 255);
   uint8_t b8 = constrain(b_norm * 255.0, 0, 255);
 
-
-  Serial.print(F("?type=TCS34725&id=11&R="));
-  Serial.print(r8,DEC);
-  Serial.print(F("&G="));
-  Serial.println(g8,DEC);
-  Serial.print(F("&B="));
-  Serial.println(b8,DEC);
+  String out = "?type=TCS34725&id=11&R=" + String(r8)+"&G="+String(g8)+"&B="+String(b8);
+  if (ResponseAll) globalBuffer += out;
+  else Serial.println(out);
 
 
 }

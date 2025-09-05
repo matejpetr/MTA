@@ -1,30 +1,30 @@
-#include <Wire.h>
+#include <Setup.hpp>
 #include <Adafruit_BMP085.h>
 #include "Senzor_BMP180.hpp"
 
-#define BMP085_ADDRESS 0x77 //defaultní I2C adresa pro ESP32
 
-extern TwoWire I2C; 
-Adafruit_BMP085 bmp180;
+extern TwoWire I2C;
+extern Adafruit_BMP085 bmp180;
 
-bool Sensor_BMP180_Init(int SDA, int SCL) {
+bool BMP180_init(int SDA, int SCL) {
   I2C.begin(SDA, SCL);
-
-  if (!bmp180.begin(BMP085_ADDRESS, &I2C)) {
-    return false;
-  }
-  
-  return true;
+  return bmp180.begin(0x77, &I2C);
 }
 
-void Sensor_BMP180() {
-  int korekce = 32;
+void BMP180_update(float gain) {
+  float cal_offset =31.5f;  //doladit 
+  float pressure_raw = bmp180.readPressure();
+  float pressure = (pressure_raw + cal_offset * 100) / 100.0f;
 
-  float p = (bmp180.readPressure() + korekce * 100) / 100.0;
-  float a = bmp180.readAltitude(bmp180.readPressure() + korekce * 100);
+  pressure *= gain;
 
-  Serial.print(F("?type=BMP180&id=14&press="));
-  Serial.print(p);
-  Serial.print(F("&altitude="));
-  Serial.println(a);
+  float altitude = bmp180.readAltitude(pressure_raw + cal_offset * 100);
+
+  String out = "?type=BMP180&id=10&press=" + String(pressure, 1)+"&altitude="+ String(altitude,1);
+  if (ResponseAll) globalBuffer += out;
+  else Serial.println(out);
+}
+
+void BMP180_reset() {
+  bmp180.begin(0x77, &I2C);
 }

@@ -1,39 +1,36 @@
+#include <Setup.hpp>
 #include "Senzor_Encoder.hpp"
+#include <Encoder.h>
 
-int position = 0;
-int pinA_global = 0;
-int pinB_global = 0;
-bool encoder_initialized = false;
+int direction_factor = 1;
+Encoder* myEnc = nullptr;
+long position = 0;
 
 bool Encoder_init(int pinA, int pinB) {
-    if (!encoder_initialized) {
-        pinA_global = pinA;
-        pinB_global = pinB;
-
-        pinMode(pinA_global, INPUT_PULLUP);
-        pinMode(pinB_global, INPUT_PULLUP);
-
-        attachInterrupt(digitalPinToInterrupt(pinA), handleEncoder, CHANGE);
-        encoder_initialized = true;
+    if (myEnc == nullptr) {
+        myEnc = new Encoder(pinA, pinB);
     }
     return true;
 }
 
 void Encoder_reset() {
-    position = 0;
+    if (myEnc != nullptr) {
+        myEnc->write(0);
+        position = 0;
+    }
 }
 
-void Encoder_update() {
-    Serial.print("?type=Encoder&id=29&position=");
-    Serial.println(position);
-}
+void Encoder_update(int lLimit, int hLimit) {
+    if (myEnc != nullptr) {
+        position = myEnc->read()/2* direction_factor;
 
+        String alarm;
+        if (position < lLimit) alarm = "LOW";
+        else if (position > hLimit) alarm = "HIGH";
+        else alarm = "OK";
 
-void IRAM_ATTR handleEncoder() {
-  bool a = digitalRead(pinA_global);
-  bool b = digitalRead(pinB_global);
-  if (a != b)
-    position--;
-  else
-    position++;
+        String out = "?type=Encoder&id=22&position=" + String(position) + "&alarm=" + alarm;
+        if (ResponseAll) globalBuffer += out;
+        else Serial.println(out);
+    }
 }

@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include <Setup.hpp>
 #include "Senzor_Heartbeat.hpp"
 
 void Heartbeat_update(int pin, int time_ms) {
@@ -64,9 +64,9 @@ void Heartbeat_update(int pin, int time_ms) {
   float duration_s = (millis() - start_time) / 1000.0;
   float bpm = (beat_count > 0 && duration_s > 0) ? (beat_count * 60.0 / duration_s) : 0;
 
-  Serial.print(F("?type=Heartbeat&id=37&bpm="));
-  Serial.println(bpm, 1);  // Hodnota BPM (údery za minutu)
- 
+  String out = "?type=Heartbeat&id=30&bpm=" + String(bpm);
+  if (ResponseAll) globalBuffer += out;
+  else Serial.println(out);
 }
 
 
