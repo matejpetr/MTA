@@ -18,14 +18,14 @@ void Ahall_update(int pin, int lLimit, int hLimit,int res) {
     polarity = "NO MAGNET";
   }
 
-   String out = "?type=Ahall&id=3&val=" + String(val) + "&polarity=" + polarity;
+  String out = "?type=Ahall&id=3&val=" + String(val) + "&polarity=" + polarity;
   if (ResponseAll) globalBuffer += out;
   else Serial.println(out);
 }
 
 
 bool Ahall_init(int pin) {
-  //return(analogRead(pin)>1800);
+  return true;
 }
 
 

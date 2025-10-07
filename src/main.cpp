@@ -1,71 +1,7 @@
-#include <Arduino.h>
-#include <Adafruit_BMP085.h>
-#include <Adafruit_BMP280.h>
+#include "libs.hpp"
+#include "GVL.hpp"
 #include "Parser.hpp"
-#include "Adafruit_TCS34725.h"
-#include "ESP32Servo.h"
 
-// knihovny aktuátorů
-#include "Stepper.hpp"
-#include "SG90.hpp"
-#include "DC.hpp"
-#include "TwoColor.hpp"
-#include "TwoColorMini.hpp"
-#include "RGB.hpp"
-#include "7color.hpp"
-#include "Laser.hpp"
-#include "BuzzP.hpp"
-#include "BuzzA.hpp"
-#include "IRtx.hpp"
-
-// knihovny senzorů
-#include "Senzor_Encoder.hpp"
-#include "Senzor_DS18B20.hpp"
-#include "Senzor_DHT11.hpp"
-#include "Senzor_Ahall.hpp"
-#include "Senzor_GY_521.hpp"
-#include "Senzor_HC_SR04.hpp"
-#include "Senzor_Antc.hpp"
-#include "Senzor_PHresistance.hpp"
-#include "Senzor_Joystick.hpp"
-#include "Senzor_HallLin.hpp"
-#include "Senzor_TCS34725.hpp"
-#include "Senzor_GP2Y0A21YK0F.hpp"
-#include "Senzor_MicSmall.hpp"
-#include "Senzor_MicBig.hpp"
-#include "Senzor_Heartbeat.hpp"
-#include "Senzor_BMP180.hpp"
-#include "Senzor_BMP.hpp"
-#include "Senzor_AnalogRead.hpp"
-#include "Senzor_DigitalRead.hpp"
-#include "Senzor_IRrx.hpp"
-
-#define VRx 15 // Číslo pinu (ADC2_05) prvního senzorického terminálu na HW standu (4pinové červené)
-#define VRy 7  // Číslo pinu (ADC2_04) druhého senzorického terminálu na HW standu (3pinové černé)
-#define sw 17
-
-#define term1 15
-#define term2 7
-#define term3 4
-#define term4 5
-
-// 3v3 i2c
-#define SDA 11
-#define SCL 12
-
-// 5v i2c
-#define xSDA 10
-// #define xSCL  neexistuje
-
-#define MT 50 // Measuring time pro Mic (ms)
-
-OneWire oneWire(term1);
-DallasTemperature sensors(&oneWire);
-
-DHT dht(term2, DHT11);
-Adafruit_BMP280 bmp(&I2C);
-Adafruit_BMP085 bmp180;
-Servo myServo;
 
 // --- Deklarace funkcí (beze změny rozhraní vůči třídám) ---
 void SensorUPDATE(int sensorID);
@@ -77,19 +13,6 @@ void SensorRESET_ALL();
 void ActuatorRESET_ALL();
 void ActuatorRESET(int actuatorID);
 
-// --- Pomocné utility pro sjednocené ID ---
-static inline String makeId(char prefix, int idx) {
-  // dvouciferné nulování: 0..9 -> 00..09, 10.. -> 10..
-  String s = (idx < 10) ? "0" + String(idx) : String(idx);
-  return String(prefix) + s;
-}
-
-static bool isDigits(const String& s) {
-  for (size_t i = 0; i < s.length(); ++i) {
-    if (!isDigit(s[i])) return false;
-  }
-  return s.length() > 0;
-}
 
 /*
  * Parsuje sjednocené ID.
@@ -103,29 +26,6 @@ static bool isDigits(const String& s) {
  *  - index:  >=0 pro konkrétní prvek, -1 pokud jde o "všechny" 
 */
 
-static bool parseUnifiedId(String idStr, char& prefix, int& index) {
-  idStr.trim();
-  idStr.toUpperCase();
-
-  if (idStr.length() < 2) return false;
-
-  prefix = idStr[0];
-  if (prefix != 'S' && prefix != 'A') return false;
-
-  // Všichni v dané skupině: "S*" / "A*"
-  if (idStr.length() == 2 && idStr[1] == '*') {
-    index = -1;
-    return true;
-  }
-
-  // Konkrétní index: zbytek musí být čísla (s nulováním, např. "00", "05", "12")
-  String digits = idStr.substring(1);
-  if (!isDigits(digits)) return false;
-
-  index = digits.toInt();
-  return true;
-}
-
 // --- Globální seznamy ---
 Sensor* SeznamSenzoru[] = {
   new DS18B20(&sensors),                      // 0
@@ -137,9 +37,9 @@ Sensor* SeznamSenzoru[] = {
   new HCSR04(term1, term2),                   // 6
   new SensorDigitalRead(term1,7,"HCSR501"),   // 7
   new SensorDigitalRead(term1,8,"KW113Z"),    // 8
-  new BMP280(SDA, SCL),                       // 9
-  new BMP180(SDA, SCL),                       // 10
-  new TCS34725(SDA, SCL),                     // 11
+  new BMP280(xSDA, xSCL),                       // 9
+  new BMP180(xSDA, xSCL),                       // 10
+  new TCS34725(xSDA, xSCL),                     // 11
   new IRrx(term1),                            // 12
   new SensorDigitalRead(term1,13,"Dntc"),     // 13
   new Antc(term2),                            // 14
@@ -193,7 +93,7 @@ void setup()
 
   Encoder_init(term3,term4);
   sensors.begin();
-  I2C.begin(SDA, SCL);
+  I2C.begin(xSDA, xSCL);
   tcs.begin(0x29,&I2C);
   dht.begin();
   bmp.begin(0x76);
@@ -214,7 +114,6 @@ void loop() {
       String idStr = result[1];
       ResponseAll = (result[2] == "true");
 
-      // sjednocené rozlišení ID
       char prefix = 0;
       int idx = -2; // -1 = all, >=0 = index, -2 = neplatné
       bool idOk = parseUnifiedId(idStr, prefix, idx);
@@ -222,10 +121,9 @@ void loop() {
       // --- UPDATE: jen senzory ---
       if (type == "UPDATE") {
         if (!idOk || (prefix != 'S' && idx != -1)) {
-          // pokud nepřišlo Sxx/S*, nic neděláme
+          
         } else {
           if (idx == -1) {
-            // S* -> všichni senzory
             globalBuffer = "";
             SensorUPDATE_ALL();
             Serial.println(globalBuffer);
@@ -238,7 +136,6 @@ void loop() {
       // --- RESET: senzory i aktuátory ---
       else if (type == "RESET") {
         if (!idOk) {
-          // nic
         } else if (idx == -1) {
           if (prefix == 'S') {
             SensorRESET_ALL();

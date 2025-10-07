@@ -1,7 +1,21 @@
 #include "Parser.hpp"
+#include <Arduino.h>
 
 // Statické pole pro výsledky (max 10 parametrů)
 static Param parsedParams[10];
+
+static bool isDigits(const String& s) {
+  for (size_t i = 0; i < s.length(); ++i) {
+    if (!isDigit(s[i])) return false;
+  }
+  return s.length() > 0;
+}
+
+String makeId(char prefix, int idx) {
+  // dvouciferné nulování: 0..9 -> 00..09, 10.. -> 10..
+  String s = (idx < 10) ? "0" + String(idx) : String(idx);
+  return String(prefix) + s;
+}
 
 // --- GET dotaz ---
 String* parseGET(String queryString) {
@@ -37,6 +51,27 @@ String* parseGET(String queryString) {
   }
 
   return values;
+}
+
+bool parseUnifiedId(String idStr, char& prefix, int& index) {
+  idStr.trim();
+  idStr.toUpperCase();
+
+  if (idStr.length() < 2) return false;
+
+  prefix = idStr[0];
+  if (prefix != 'S' && prefix != 'A') return false;
+
+  if (idStr.length() == 2 && idStr[1] == '*') {
+    index = -1;
+    return true;
+  }
+
+  String digits = idStr.substring(1);
+  if (!isDigits(digits)) return false;
+
+  index = digits.toInt();
+  return true;
 }
 
 // --- Config parametry (aktuátory+senzory) ---
