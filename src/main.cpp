@@ -57,7 +57,7 @@ Sensor* SeznamSenzoru[] = {
   new SensorDigitalRead(term2,26,"REED"),     // 26
   new MicSmall(term1, MT),                    // 27
   new MicBig(term1, MT),                      // 28
-  new SensorDigitalRead(term1,29,"MetalTouch"), // 29
+  new SensorDigitalRead(term1,29,"MetalTouch"),// 29
   new Heartbeat(term2,5000),                  // 30
   new SensorDigitalRead(term2,31,"Btn"),      // 31
   new SensorDigitalRead(term2,32,"TiltSwitch"),// 32
@@ -100,6 +100,9 @@ void setup()
   bmp180.begin(0x77, &I2C);
   myServo.attach(term1);
 }
+
+//neco
+
 
 String serialBuffer = "";
 
