@@ -1,6 +1,11 @@
 #include "vscp_device.hpp"
-extern "C" void VSCP_OnConnect(const String& id, int pin);  // forward deklarace v global scope
 
+extern "C" void VSCP_OnConnect(const String& id, int pin);
+
+int VSCPDevice::getPin(const String& id) const {
+  auto it = idToPin.find(id);
+  return (it == idToPin.end()) ? -1 : it->second;
+}
 
 String VSCPDevice::readLineNonBlocking() {
   static String buf;
@@ -9,7 +14,6 @@ String VSCPDevice::readLineNonBlocking() {
     if (b < 0) break;
     char c = (char)b;
 
-    // 10 = '\n' (LF), 13 = '\r' (CR) — vyhneme se problémovým uvozovkám
     if (b == 10 || b == 13) {
       if (buf.length()) { String out = buf; buf = ""; return out; }
     } else {
@@ -146,9 +150,3 @@ void VSCPDevice::handleUPDATE(const std::map<String,String>& kv) {
   if (data.empty()) { sendERR(id, 204, "no_content"); return; }
   sendOK(id, data);
 }
-/*
-int VSCPDevice::getPin(const String& id) const {
-  auto it = idToPin.find(id);
-  return (it == idToPin.end()) ? -1 : it->second;
-}
-  */

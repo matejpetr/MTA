@@ -17,7 +17,6 @@ struct KV { String k; String v; };
 
 class VSCPDevice {
 public:
-  // místo 'using UpdateFn = ...' použijeme typedef (IntelliSense to líp tráví)
   typedef std::function< std::vector<KV>(const String&, int) > UpdateFn;
 
   void onUpdate(const String& id, UpdateFn fn) { updateHandlers[id] = std::move(fn); }
