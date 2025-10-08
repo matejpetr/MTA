@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "vscp_device.hpp"
 #include "Sensor.hpp"
+#include "Parser.hpp"     // Param{key,value}
 #include <vector>
 #include <map>
 
@@ -17,10 +18,12 @@ extern String globalBuffer;
 
 VSCPDevice vscp;
 
-// --- DS18B20 (nastavujeme pin přes CONNECT) ---
+// --- DS18B20 (nastavíme pin přes CONNECT a hlídáme alarmy přes CONFIG) ---
 static int ds_pin = -1;
 static OneWire* ds_ow = nullptr;
 static DallasTemperature* ds_dt = nullptr;
+static float ds_low_alarm  = -9999.0f;
+static float ds_high_alarm =  9999.0f;
 
 static void ds_setup(int pin) {
   if (ds_ow) { delete ds_ow; ds_ow = nullptr; }
@@ -107,10 +110,10 @@ extern "C" void VSCP_SetupRegisterAll() {
     });
   }
 
-  // DS18B20: override pro id="0" – čteme ds_dt (pin z CONNECT)
+  // DS18B20: override pro id="0" – čteme ds_dt (pin z CONNECT) + alarmy
   vscp.onUpdate(String("0"), [](const String& /*id*/, int /*pin*/)->std::vector<KV> {
     std::vector<KV> out;
-    if (!ds_dt) return out;
+    if (!ds_dt) return out;       // není CONNECT
 
     ds_dt->requestTemperatures();
     float t = ds_dt->getTempCByIndex(0);
@@ -118,7 +121,11 @@ extern "C" void VSCP_SetupRegisterAll() {
     if (t <= -126.0f || fabsf(t - 85.0f) < 0.01f) return out;
 
     KV a; a.k="temp";  a.v = String(t,1); out.push_back(a);
-    KV b; b.k="alarm"; b.v = "OK";        out.push_back(b);
+    KV b; b.k="alarm";
+    if (t < ds_low_alarm)      b.v = "LOW";
+    else if (t > ds_high_alarm) b.v = "HIGH";
+    else                        b.v = "OK";
+    out.push_back(b);
     return out;
   });
 }
@@ -127,14 +134,46 @@ extern "C" void VSCP_Poll() {
   vscp.poll();
 }
 
+// CONNECT hook (init senzoru + DS bus)
 extern "C" void VSCP_OnConnect(const String& id, int pin) {
   int idx = id.toInt();
   if (idx >= 0 && idx < PocetSenzoru) {
     if ((int)g_inited.size() <= idx) g_inited.resize(idx+1, 0);
     if (!g_inited[idx]) { SeznamSenzoru[idx]->init(); g_inited[idx] = 1; }
   }
-
   if (id == "0" && pin >= 0) {
     ds_setup(pin);
   }
+}
+
+// CONFIG hook — převede parametry na Param{key,value} a zavolá sensor->config,
+// zároveň obslouží DS18B20 alarm limity (LowAlarm/HighAlarm). Vrací true pokud něco použil.
+bool VSCP_OnConfig(const String& id, const std::map<String,String>& params) {
+  bool used = false;
+
+  // DS18B20 alarm limity
+  if (id == "0") {
+    auto itL = params.find("LowAlarm");
+    if (itL != params.end()) { ds_low_alarm = String(itL->second.c_str()).toFloat(); used = true; }
+    auto itH = params.find("HighAlarm");
+    if (itH != params.end()) { ds_high_alarm = String(itH->second.c_str()).toFloat(); used = true; }
+  }
+
+  // Předat i do obecného sensor->config (pokud existují nějaké klíče)
+  int idx = id.toInt();
+  if (idx >= 0 && idx < PocetSenzoru) {
+    std::vector<Param> pvec;
+    pvec.reserve(params.size());
+    for (const auto& kv : params) {
+      if (kv.first == "type" || kv.first == "id" || kv.first == "pin" || kv.first == "api") continue;
+      Param p; p.key = kv.first.c_str(); p.value = kv.second.c_str();
+      pvec.push_back(p);
+    }
+    if (!pvec.empty()) {
+      SeznamSenzoru[idx]->config(pvec.data(), (int)pvec.size());
+      used = true;
+    }
+  }
+
+  return used;
 }

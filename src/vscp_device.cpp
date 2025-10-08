@@ -1,6 +1,8 @@
 #include "vscp_device.hpp"
 
+// Hooks defined in vscp_glue.cpp
 extern "C" void VSCP_OnConnect(const String& id, int pin);
+bool VSCP_OnConfig(const String& id, const std::map<String,String>& params);
 
 int VSCPDevice::getPin(const String& id) const {
   auto it = idToPin.find(id);
@@ -74,9 +76,10 @@ void VSCPDevice::handleRequest(const String& line) {
   if (type == "CONNECT")     { handleCONNECT(kv); return; }
   if (type == "DISCONNECT")  { handleDISCONNECT(kv); return; }
   if (type == "UPDATE")      { handleUPDATE(kv); return; }
+  if (type == "CONFIG")      { handleCONFIG(kv); return; }  // <-- NEW
 
   auto itId = kv.find("id");
-  String id = (itId != kv.end()) ? String(itId->second.c_str()) : String("");
+  String id = (itId != kv.end()) ? String(itId->second.c_str()) : String(""); 
   sendERR(id, 400, "unknown_type");
 }
 
@@ -95,7 +98,7 @@ void VSCPDevice::handleINIT(const std::map<String,String>& kv) {
       return;
     }
   }
-  sendOK("");
+  sendOK(""); 
 }
 
 void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
@@ -149,4 +152,32 @@ void VSCPDevice::handleUPDATE(const std::map<String,String>& kv) {
 
   if (data.empty()) { sendERR(id, 204, "no_content"); return; }
   sendOK(id, data);
+}
+
+void VSCPDevice::handleCONFIG(const std::map<String,String>& kv) {
+  auto itId = kv.find("id");
+  if (itId == kv.end()) { sendERR("", 400, "missing_id"); return; }
+  String id = itId->second.c_str();
+
+#if VSCP_REQUIRE_CONNECT
+  if (getPin(id) < 0) { sendERR(id, 409, "not_connected"); return; }
+#endif
+
+  // Build parameter map excluding protocol keys
+  std::map<String,String> params;
+  for (auto &p : kv) {
+    if (p.first == "type" || p.first == "id" || p.first == "pin" || p.first == "api") continue;
+    params[p.first] = p.second;
+  }
+  if (params.empty()) { sendERR(id, 400, "missing_params"); return; }
+
+  bool ok = false;
+  try {
+    ok = VSCP_OnConfig(id, params);
+  } catch (...) {
+    sendERR(id, 500, "config_exception"); return;
+  }
+
+  if (!ok) { sendERR(id, 422, "config_invalid"); return; }
+  sendOK(id);
 }

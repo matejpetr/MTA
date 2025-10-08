@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <utility>   // std::move
+#include "vscp_port.hpp"
 
 #ifndef VSCP_API_VERSION
 #define VSCP_API_VERSION "1.0"
@@ -35,6 +36,7 @@ private:
   void handleCONNECT(const std::map<String,String>& kv);
   void handleDISCONNECT(const std::map<String,String>& kv);
   void handleUPDATE(const std::map<String,String>& kv);
+  void handleCONFIG(const std::map<String,String>& kv);   // <-- NEW
 
   std::map<String, UpdateFn> updateHandlers; // id -> callback
   std::map<String, int>      idToPin;        // id -> pin

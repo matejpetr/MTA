@@ -1,6 +1,8 @@
 #include "libs.hpp"
 #include "GVL.hpp"
 #include "Parser.hpp"
+#include <HardwareSerial.h>
+#include "vscp_port.hpp"  
 
 extern "C" void VSCP_SetupRegisterAll();
 extern "C" void VSCP_Poll();
@@ -35,7 +37,7 @@ Sensor* SeznamSenzoru[] = {
   new DS18B20(&sensors),                      // 0
   new DHT11x(term2),                          // 1
   new SensorDigitalRead(term2,2,"Dhall"),     // 2
-  new Ahall(term2),                           // 3
+  new Ahall(term2),                           // 3  -- s rezistorem
   new SensorDigitalRead(term1,4,"PInterrupt"),// 4
   new SensorDigitalRead(term1,5,"FC51"),      // 5
   new HCSR04(term1, term2),                   // 6
@@ -49,7 +51,7 @@ Sensor* SeznamSenzoru[] = {
   new Antc(term2),                            // 14
   new PHresistance(term2),                    // 15
   new Joystick(VRx,VRy,sw),                   // 16
-  new HallLin(term2),                         // 17
+  new HallLin(term2),                         // 17 -- bez rezistoru
   new SensorDigitalRead(term1,18,"MQ135"),    // 18
   new SensorDigitalRead(term1,19,"DMoisture"),// 19
   new SensorDigitalRead(term1,20,"TTP223"),   // 20
@@ -92,8 +94,20 @@ bool ResponseAll = false;
 
 void setup()
 {
+  #if USE_HW_UART
+  // Přesměruj protokol na Serial1 s vlastními piny
+  VSCP_STREAM.begin(VSCP_BAUD, SERIAL_8N1, VSCP_RX_PIN, VSCP_TX_PIN);
+
+  // (Volitelné) Debug přes USB Serial
   Serial.begin(115200);
-  
+  delay(200);
+  Serial.println("DBG: VSCP po Serial1");
+#else
+  // Protokol po USB Serial
+  VSCP_STREAM.begin(VSCP_BAUD);
+  delay(200);
+  VSCP_STREAM.println("DBG: VSCP po USB Serial");
+#endif
   VSCP_SetupRegisterAll();
   Serial.setTimeout(0);
 
