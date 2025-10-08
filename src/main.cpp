@@ -2,6 +2,10 @@
 #include "GVL.hpp"
 #include "Parser.hpp"
 
+extern "C" void VSCP_SetupRegisterAll();
+extern "C" void VSCP_Poll();
+
+
 
 // --- Deklarace funkcí (beze změny rozhraní vůči třídám) ---
 void SensorUPDATE(int sensorID);
@@ -37,9 +41,9 @@ Sensor* SeznamSenzoru[] = {
   new HCSR04(term1, term2),                   // 6
   new SensorDigitalRead(term1,7,"HCSR501"),   // 7
   new SensorDigitalRead(term1,8,"KW113Z"),    // 8
-  new BMP280(xSDA, xSCL),                       // 9
-  new BMP180(xSDA, xSCL),                       // 10
-  new TCS34725(xSDA, xSCL),                     // 11
+  new BMP280(xSDA, xSCL),                     // 9
+  new BMP180(xSDA, xSCL),                     // 10
+  new TCS34725(xSDA, xSCL),                   // 11
   new IRrx(term1),                            // 12
   new SensorDigitalRead(term1,13,"Dntc"),     // 13
   new Antc(term2),                            // 14
@@ -89,6 +93,8 @@ bool ResponseAll = false;
 void setup()
 {
   Serial.begin(115200);
+  
+  VSCP_SetupRegisterAll();
   Serial.setTimeout(0);
 
   Encoder_init(term3,term4);
@@ -101,15 +107,14 @@ void setup()
   myServo.attach(term1);
 }
 
-//neco
-
-//test
-
-
 String serialBuffer = "";
 
 void loop() {
-  if (Serial.available()) {
+  
+  VSCP_Poll();
+
+#if 0 // --- disabled legacy serial parser (replaced by VSCP_Poll) ---
+if (Serial.available()) {
     char c = Serial.read();
     if (c == '\n') {
       serialBuffer.trim();
@@ -186,6 +191,8 @@ void loop() {
       serialBuffer += c;
     }
   }
+#endif
+
 }
 
 // --- požadavky na senzory ---

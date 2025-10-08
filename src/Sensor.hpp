@@ -1,6 +1,6 @@
 #ifndef SENSOR_HPP
 #define SENSOR_HPP
-#include "Parser.hpp"   // ← přidat
+#include "Parser.hpp" 
 
 
 //Třída Sensor

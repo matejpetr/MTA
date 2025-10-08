@@ -13,10 +13,6 @@ constexpr uint8_t term4 = 5;
 constexpr uint8_t xSDA = 11;
 constexpr uint8_t xSCL = 12;
 
-// 5v i2c
-//constexpr uint8_t xSDA = 10;
-// constexpr uint8_t xSCL  neexistuje
-
 constexpr uint8_t MT = 50; // Measuring time pro Mic (ms)
 
 OneWire oneWire(term1);
