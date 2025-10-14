@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Adafruit_BMP085.h>
 #include <Adafruit_BMP280.h>
-#include "Parser.hpp"
+
 #include "Adafruit_TCS34725.h"
 #include "ESP32Servo.h"
 #include "Sensor.hpp"
@@ -36,6 +36,5 @@
 #include "Senzor_Heartbeat.hpp"
 #include "Senzor_BMP180.hpp"
 #include "Senzor_BMP.hpp"
-#include "Senzor_AnalogRead.hpp"
 #include "Senzor_DigitalRead.hpp"
 #include "Senzor_IRrx.hpp"

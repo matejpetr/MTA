@@ -1,11 +1,11 @@
 #include "libs.hpp"
 
-constexpr uint8_t VRx = 15; // Číslo pinu (ADC2_05) prvního senzorického terminálu na HW standu (4pinové červené)
-constexpr uint8_t VRy = 7;  // Číslo pinu (ADC2_04) druhého senzorického terminálu na HW standu (3pinové černé)
+constexpr uint8_t VRx = 15; 
+constexpr uint8_t VRy = 7;  
 constexpr uint8_t sw = 17;
 
-constexpr uint8_t term1 = 15;
-constexpr uint8_t term2 = 7;
+constexpr uint8_t term1 = 15;   // ADC2_05
+constexpr uint8_t term2 = 7;    // ADC2_04
 constexpr uint8_t term3 = 4;
 constexpr uint8_t term4 = 5;
 

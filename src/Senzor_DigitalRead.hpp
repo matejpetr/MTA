@@ -1,26 +1,23 @@
 #pragma once
-
 #include <Arduino.h>
+#include <vector>
 #include "Sensor.hpp"
-
-void Sensor_DigitalRead(int Pin, int id, const char* type);
-
 
 class SensorDigitalRead : public Sensor {
 public:
-  SensorDigitalRead(int pin, int id, const char* type)
+  SensorDigitalRead(uint8_t pin, int id, const char* type)
     : _pin(pin), _id(id), _type(type) {}
 
-  void update() override {Sensor_DigitalRead(_pin, _id, _type);}
-  void reset() override {}
-  bool init() override {return false;}
-  const char* getType() override {return "Digital";}
-  
+  bool init() override{return true;};
+
+  void reset() override{};
+
+  std::vector<KV> update() override;
+
+  const char* getType() override { return "Digital"; }
+
 private:
-  int _pin;
-  int _id;
-  const char* _type;
+  uint8_t     _pin;
+  int         _id;           // id si klidně necháváme, i když ho nepoužíváme
+  const char* _type;         // jen kvůli kompatibilitě s tvým kódem
 };
-
-
-

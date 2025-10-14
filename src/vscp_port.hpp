@@ -6,13 +6,11 @@
 #define USE_HW_UART 0 // 0 = USB Serial, 1 = Serial1 (HW)
 #endif
 
-// Společná rychlost (můžeš přepsat v platformio.ini -DVSCP_BAUD=...)
 #ifndef VSCP_BAUD
 #define VSCP_BAUD 115200
 #endif
 
 #if USE_HW_UART
-  // Piny pro Serial1 (přepiš podle zapojení nebo v platformio.ini)
   #ifndef VSCP_RX_PIN
   #define VSCP_RX_PIN 44
   #endif

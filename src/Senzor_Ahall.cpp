@@ -2,33 +2,20 @@
 #include <Senzor_Ahall.hpp>
 
 
-int val;
-void Ahall_update(int pin, int lLimit, int hLimit,int res) {
+short val;
 
-  analogReadResolution(res);
-  val = analogRead(pin);
+std::vector<KV> Ahall::update() {
+  analogReadResolution(_res);
+  _val = analogRead(_pin);
+
   String polarity;
+  if (_val > _hLimit)       polarity = "SOUTH";
+  else if (_val < _lLimit)  polarity = "NORTH";
+  else                      polarity = "NO MAGNET";
 
-
-  if (val > hLimit) {     // porovnávání vstupní hodnoty vůči limitům
-    polarity = "SOUTH";
-  } else if (val < lLimit) {
-    polarity = "NORTH";
-  } else {
-    polarity = "NO MAGNET";
-  }
-
-  String out = "?type=Ahall&id=3&val=" + String(val) + "&polarity=" + polarity;
-  if (ResponseAll) globalBuffer += out;
-  else Serial.println(out);
+  std::vector<KV> kv;
+  kv.push_back({"val",      String(_val)});
+  kv.push_back({"polarity", polarity});
+  return kv;
 }
 
-
-bool Ahall_init(int pin) {
-  return true;
-}
-
-
-void Ahall_reset(){
-val = 0;
-}

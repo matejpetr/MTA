@@ -1,7 +1,6 @@
 #pragma once
 #include <Arduino.h>
 #include "actuator.hpp"
-#include "Parser.hpp"
 
 void SG90_config(int pin, int angle, int speed);
 void SG90_reset(int pin);

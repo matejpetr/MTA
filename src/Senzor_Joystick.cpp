@@ -1,107 +1,87 @@
-#include <Setup.hpp>
 #include "Senzor_Joystick.hpp"
 
-namespace {
-  // jednoduchý stav kalibrace uložený v .cpp
-  bool     g_calibrated = false;
-  int      g_cx = 0, g_cy = 0;          // zkalibrovaný střed os
-  int      g_prevRes = -1;              // naposledy použité rozlišení
-  uint32_t g_maxADC  = 4095;            // podle res
+void Joystick::calibrateCenter_(int res) {
+  analogReadResolution(res);
+  _maxADC = (1UL << res) - 1;
 
-  void calibrateCenter(int pinX, int pinY, int res) {
-    // nastavení rozlišení a hranic
-    analogReadResolution(res);
-    g_maxADC = (1UL << res) - 1;
+#ifdef ESP32
+  // doporučená atenuace pro plný rozsah 0–3.3 V
+  analogSetPinAttenuation(_x, ADC_11db);
+  analogSetPinAttenuation(_y, ADC_11db);
+#endif
 
-    #ifdef ESP32
-      // pro plný rozsah 0–3.3 V (doporučeno u ESP32)
-      analogSetPinAttenuation(pinX, ADC_11db);
-      analogSetPinAttenuation(pinY, ADC_11db);
-    #endif
-
-    // načti několik vzorků a zprůměruj
-    long sx = 0, sy = 0;
-    const int N = 16;
-    for (int i = 0; i < N; ++i) {
-      sx += analogRead(pinX);
-      sy += analogRead(pinY);
-      delay(2);
-    }
-    g_cx = (int)(sx / N);
-    g_cy = (int)(sy / N);
-
-    g_prevRes    = res;
-    g_calibrated = true;
+  long sx = 0, sy = 0;
+  const int N = 16;
+  for (int i = 0; i < N; ++i) {
+    sx += analogRead(_x);
+    sy += analogRead(_y);
+    delay(2);
   }
+  _cx = (int)(sx / N);
+  _cy = (int)(sy / N);
 
-  // převod procent na ADC kroky (ochrana proti přetečení a mimo rozsah)
-  inline int pctToAdcTol(int pct) {
-    if (pct < 0)   pct = 0;
-    if (pct > 100) pct = 100;
-    return (int)((pct * (long)g_maxADC) / 100L);
-  }
+  _prevRes   = res;
+  _calibrated = true;
 }
 
-// ============= API =============
+int Joystick::pctToAdcTol_(int pct) const {
+  int p = pct;
+  if (p < 0)   p = 0;
+  if (p > 100) p = 100;
+  return (int)((p * (long)_maxADC) / 100L);
+}
 
-void Joystick_update(int x, int y, int sw, int res, int thresholdPct) {
-  static bool pinsInited = false;
-  if (!pinsInited) {
-    pinMode(sw, INPUT_PULLUP);
-    pinsInited = true;
+bool Joystick::init() {
+  // první nastavení pinů
+  if (!_pinsInited) {
+    pinMode(_sw, INPUT_PULLUP);
+    _pinsInited = true;
+  }
+  // kalibrace středu (pokud ještě nebyla)
+  calibrateCenter_((_prevRes > 0) ? _prevRes : _res);
+
+  // hrubá sanity-check: hodnoty v rozsahu ADC → OK
+  const int xv = analogRead(_x);
+  const int yv = analogRead(_y);
+  return (xv >= 0 && yv >= 0);
+}
+
+std::vector<KV> Joystick::update() {
+  if (!_pinsInited) {
+    pinMode(_sw, INPUT_PULLUP);
+    _pinsInited = true;
   }
 
-  // kalibrace při prvním volání nebo při změně rozlišení
-  if (!g_calibrated || res != g_prevRes) {
-    calibrateCenter(x, y, res);   // nech páčku uprostřed
+  // kalibrace při prvním použití nebo při změně rozlišení
+  if (!_calibrated || _res != _prevRes) {
+    calibrateCenter_(_res);   // nech páčku uprostřed
   } else {
-    analogReadResolution(res);    // res můžeš měnit dynamicky
+    analogReadResolution(_res);
   }
 
-  const int xValue  = analogRead(x);
-  const int yValue  = analogRead(y);
-  const bool click  = (digitalRead(sw) == LOW);
+  const int xValue = analogRead(_x);
+  const int yValue = analogRead(_y);
+  const bool click = (digitalRead(_sw) == LOW);
 
-  const int tol     = pctToAdcTol(thresholdPct);
-  int dx = xValue - g_cx;
-  int dy = yValue - g_cy;
+  const int tol = pctToAdcTol_(_threshold);
+  int dx = xValue - _cx;
+  int dy = yValue - _cy;
 
   // mrtvá zóna
   if (abs(dx) < tol) dx = 0;
   if (abs(dy) < tol) dy = 0;
 
-  // určení směru – vezmeme osu s větší odchylkou
+  // určení směru – přesně podle původního kódu (zachováno i s mapováním os)
   String direction;
   if (click) {
     direction = "CLICK";
   } else if (dx == 0 && dy == 0) {
     direction = "CENTER";
   } else if (abs(dy) >= abs(dx)) {
-    // běžně UP = menší Y (nahoru snižuje napětí)
-     direction = (dy < 0) ? "LEFT" : "RIGHT";
+    direction = (dy < 0) ? "LEFT" : "RIGHT";
   } else {
     direction = (dx > 0) ? "UP" : "DOWN";
   }
 
-
-  String out = "?type=Joystick&id=16&direction=" + direction;
-
-  if (ResponseAll) globalBuffer += out;
-  else Serial.println(out);
-
-
-}
-
-bool Joystick_init(int x, int y) {
-  
-  calibrateCenter(x, y, (g_prevRes > 0) ? g_prevRes : 12);
-  // hrubá kontrola – pokud čteme čísla v rozsahu ADC, považuj za OK
-  const int xv = analogRead(x);
-  const int yv = analogRead(y);
-  return (xv >= 0 && yv >= 0);
-}
-
-void Joystick_reset() {
-  // vynutí novou kalibraci při nejbližším update()
-  g_calibrated = false;
+  return { {"direction", direction} };
 }

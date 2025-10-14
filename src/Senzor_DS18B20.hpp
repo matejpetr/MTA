@@ -1,39 +1,47 @@
-  #pragma once
+#pragma once
 
-  #include "Sensor.hpp"
-  #include <OneWire.h>
-  #include <DallasTemperature.h>
-  #include "Parser.hpp"
+#include <Arduino.h>
+#include <vector>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include "Sensor.hpp"
 
 
-  void DS18B20_update(DallasTemperature &sensors,int res);
-  bool DS18B20_init(DallasTemperature &sensors);
-  void DS18B20_reset(DallasTemperature &sensors);
-  void DS18B20_config(DallasTemperature &sensors,int res, int LAlarm, int HAlarm);
-
- class DS18B20 : public Sensor {
+class DS18B20 : public Sensor {
 public:
-  DS18B20(DallasTemperature* sensors)
-    : _sensors(sensors),_res(12) {}
+  explicit DS18B20(DallasTemperature* sensors)
+    : _sensors(sensors), _res(12), _LAlarm(-55), _HAlarm(125) {}
 
-  void update() override {DS18B20_update(*_sensors,_res);}
-  bool init() override {return DS18B20_init(*_sensors);}
-  void reset() override {DS18B20_reset(*_sensors);}
+  // Sběrnicový senzor: jednoduché ověření přítomnosti zařízení
+  bool init() override {
+    if (!_sensors) return false;
+    return _sensors->getDeviceCount() > 0;
+  }
 
+  void reset() override {
+    if (_sensors) _sensors->begin();
+  }
+
+  // Měření — vrací {"temp", ...}, {"alarm", "LOW|OK|HIGH"}
+  std::vector<KV> update() override;
+
+  const char* getType() override { return "DS18B20"; }
+
+  // CONFIG zůstává v HPP: nastaví členy a zavolá vlastní metodu applyConfig()
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if (params[i].key == "Res") _res = params[i].value.toInt();
-      else if (params[i].key == "LAlarm") _LAlarm = params[i].value.toInt();
-      else if (params[i].key == "HAlarm") _HAlarm = params[i].value.toInt();
+      if      (params[i].key == "Res")    _res    = params[i].value.toInt();      // 9..12
+      else if (params[i].key == "LAlarm") _LAlarm = params[i].value.toInt();      // -55..125
+      else if (params[i].key == "HAlarm") _HAlarm = params[i].value.toInt();      // -55..125
     }
-    DS18B20_config(*_sensors, _res, _LAlarm, _HAlarm);
-}
+    applyConfig();   // <<< HW aplikace mimo update(), implementovaná v .cpp
+  }
 
-
-
-
-  const char* getType() override {return "DS18B20";}
 private:
-  DallasTemperature* _sensors;
- int _res, _LAlarm, _HAlarm;
+  void applyConfig();  // definice v .cpp
+
+  DallasTemperature* _sensors;   // neowned
+  int  _res;                     // 9..12
+  int  _LAlarm;                  // -55..125
+  int  _HAlarm;                  // -55..125
 };

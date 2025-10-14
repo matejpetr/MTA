@@ -11,8 +11,8 @@ int VSCPDevice::getPin(const String& id) const {
 
 String VSCPDevice::readLineNonBlocking() {
   static String buf;
-  while (Serial.available()) {
-    int b = Serial.read();
+  while (VSCP_STREAM.available()) {
+    int b = VSCP_STREAM.read();
     if (b < 0) break;
     char c = (char)b;
 
@@ -43,27 +43,27 @@ std::map<String,String> VSCPDevice::parseQuery(const String& q) {
 
 void VSCPDevice::sendOK(const String& id, const std::vector<KV>& kvs) {
   if (id.length() > 0) {
-    Serial.print("?id="); Serial.print(id);
-    Serial.print("&status=1");
+    VSCP_STREAM.print("?id="); VSCP_STREAM.print(id);
+    VSCP_STREAM.print("&status=1");
   } else {
-    Serial.print("?status=1");
+    VSCP_STREAM.print("?status=1");
   }
   for (auto& p : kvs) {
-    Serial.print("&"); Serial.print(p.k); Serial.print("=");
-    Serial.print(p.v);
+    VSCP_STREAM.print("&"); VSCP_STREAM.print(p.k); VSCP_STREAM.print("=");
+    VSCP_STREAM.print(p.v);
   }
-  Serial.println();
+  VSCP_STREAM.println();
 }
 
 void VSCPDevice::sendERR(const String& id, int code, const String& msg) {
   if (id.length() > 0) {
-    Serial.print("?id="); Serial.print(id);
-    Serial.print("&status=0");
+    VSCP_STREAM.print("?id="); VSCP_STREAM.print(id);
+    VSCP_STREAM.print("&status=0");
   } else {
-    Serial.print("?status=0");
+    VSCP_STREAM.print("?status=0");
   }
-  Serial.print("&error="); Serial.print(msg);
-  Serial.print("&code="); Serial.println(code);
+  VSCP_STREAM.print("&error="); VSCP_STREAM.print(msg);
+  VSCP_STREAM.print("&code="); VSCP_STREAM.println(code);
 }
 
 void VSCPDevice::handleRequest(const String& line) {
@@ -76,7 +76,7 @@ void VSCPDevice::handleRequest(const String& line) {
   if (type == "CONNECT")     { handleCONNECT(kv); return; }
   if (type == "DISCONNECT")  { handleDISCONNECT(kv); return; }
   if (type == "UPDATE")      { handleUPDATE(kv); return; }
-  if (type == "CONFIG")      { handleCONFIG(kv); return; }  // <-- NEW
+  if (type == "CONFIG")      { handleCONFIG(kv); return; }  
 
   auto itId = kv.find("id");
   String id = (itId != kv.end()) ? String(itId->second.c_str()) : String(""); 
@@ -99,6 +99,7 @@ void VSCPDevice::handleINIT(const std::map<String,String>& kv) {
     }
   }
   sendOK(""); 
+  
 }
 
 void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
@@ -110,6 +111,12 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
   }
   String id = itId->second.c_str();
   int pin   = String(itPin->second.c_str()).toInt();
+ 
+  if (!(id.length() == 3 && id.charAt(0) == 'S' &&
+        isDigit(id.charAt(1)) && isDigit(id.charAt(2)))) {
+    sendERR(id, 422, "invalid_id_format"); 
+    return;
+  }
 
   if (pin < 0) { sendERR(id, 400, "invalid_pin"); return; }
   if (idToPin.find(id) != idToPin.end()) { sendERR(id, 409, "already_connected"); return; }

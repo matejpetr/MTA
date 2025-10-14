@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "actuator.hpp"
-#include "Parser.hpp"
+
 
 void TwoColor_config(int pinRed, int pinGreen, char color, int Brightness);
 void TwoColor_reset();

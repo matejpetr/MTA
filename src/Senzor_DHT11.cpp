@@ -1,28 +1,19 @@
 #include <Setup.hpp>
 #include "Senzor_DHT11.hpp"
 
-void DHT11_update(int pin, bool unit, bool HI){
- 
+std::vector<KV> DHT11x::update() {
   float h = dht.readHumidity();
-  float t = dht.readTemperature(unit);
+  float t = dht.readTemperature(_unitF);    // _unitF: false=°C, true=°F
 
-  if (HI) {
-    t = dht.computeHeatIndex(t, h, unit);
+  if (_useHI) {
+    t = dht.computeHeatIndex(t, h, _unitF); // Heat Index v odpovídající jednotce
   }
-  
-  String out = "?type=dht11&id=0&humi=" + String(h,1) + "&temp=" + String(t,1);
-  if (ResponseAll) globalBuffer += out;
-  else Serial.println(out);
+
+  // Výstup stejně jako dřív, jen jako KVs (bez query-stringu)
+  std::vector<KV> kv;
+  kv.push_back({"humi", String(h, 1)});
+  kv.push_back({"temp", String(t, 1)});
+  return kv;
 }
 
-bool DHT11_init(){
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
-return (h&&t>0);
-
-}
-
-void DHT11_reset() {
-  dht.begin();
-}
 

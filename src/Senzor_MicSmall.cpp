@@ -1,45 +1,38 @@
-#include <Setup.hpp>
 #include "Senzor_MicSmall.hpp"
+#include <math.h>
 
-int refS = 50;
-
-void MicSmall_update(int pin, int MT, int res) {
-  analogReadResolution(res);
-
-  float MaxDiff = 0;
-  unsigned long StartTime = millis();
-
-  while (millis() - StartTime < MT) {
-    float soundLevel = analogRead(pin);
-    float diff = abs(soundLevel - refS);
-    if (diff > MaxDiff) MaxDiff = diff;
-  }
-
-  float volume = 20.0 * log10(MaxDiff + 1);
-
-  String out = "?type=MicSmall&id=27&volume=" + String(volume, 1);
-  if (ResponseAll) globalBuffer += out;
-  else Serial.println(out);
-}
-
-bool MicSmall_init(int pin) {
+bool MicSmall::init() {
+  // původní MicSmall_init: malý klidový rozptyl
   const int samples = 10;
-  int minVal = 4095;
+  int minVal = (1 << _res) - 1;
   int maxVal = 0;
   long sum = 0;
 
-  for (int i = 0; i < samples; i++) {
-    int val = analogRead(pin);
+  for (int i = 0; i < samples; ++i) {
+    int val = analogRead(_pin);
     sum += val;
     if (val < minVal) minVal = val;
     if (val > maxVal) maxVal = val;
     delay(5);
   }
 
-  int avg = sum / samples;
-  int diff = maxVal - minVal;
-
+  const int diff = maxVal - minVal;
   return (diff < 10);
 }
 
-void MicSmall_reset() {}
+std::vector<KV> MicSmall::update() {
+  analogReadResolution(_res);
+
+  float maxDiff = 0.0f;
+  const unsigned long start = millis();
+
+  while (millis() - start < (unsigned long)_time) {
+    const float sample = analogRead(_pin);
+    const float diff   = fabsf(sample - (float)REF_BASE);
+    if (diff > maxDiff) maxDiff = diff;
+  }
+
+  const float volume = 20.0f * log10f(maxDiff + 1.0f);
+
+  return { {"volume", String(volume, 1)} };
+}

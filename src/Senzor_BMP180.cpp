@@ -1,30 +1,37 @@
-#include <Setup.hpp>
-#include <Adafruit_BMP085.h>
 #include "Senzor_BMP180.hpp"
+#include <Adafruit_BMP085.h>
 
-
+// Sdílíš globální instanci sběrnice/senzoru tak jako doteď:
 extern TwoWire I2C;
 extern Adafruit_BMP085 bmp180;
 
-bool BMP180_init(int SDA, int SCL) {
-  I2C.begin(SDA, SCL);
+bool BMP180::init() {
+  I2C.begin(_sda, _scl);
   return bmp180.begin(0x77, &I2C);
 }
 
-void BMP180_update(float gain) {
-  float cal_offset =31.5f;  //doladit 
-  float pressure_raw = bmp180.readPressure();
-  float pressure = (pressure_raw + cal_offset * 100) / 100.0f;
-
-  pressure *= gain;
-
-  float altitude = bmp180.readAltitude(pressure_raw + cal_offset * 100);
-
-  String out = "?type=BMP180&id=10&press=" + String(pressure, 1)+"&altitude="+ String(altitude,1);
-  if (ResponseAll) globalBuffer += out;
-  else Serial.println(out);
+void BMP180::reset() {
+  // re-init senzoru na stejné adrese a sběrnici
+  bmp180.begin(0x77, &I2C);
 }
 
-void BMP180_reset() {
-  bmp180.begin(0x77, &I2C);
+std::vector<KV> BMP180::update() {
+  // čtení surového tlaku (Pa)
+  const float pressure_raw = bmp180.readPressure();
+
+  // kalibrace jako v původním kódu:
+  // (pressure_raw + CAL_OFFSET*100) / 100.0 -> mbar (hPa)
+  float pressure = (pressure_raw + CAL_OFFSET * 100.0f) / 100.0f;
+
+  // aplikuj gain
+  pressure *= _gain;
+
+  // výpočet nadmořské výšky – knihovna očekává tlak v Pa
+  const float altitude = bmp180.readAltitude(pressure_raw + CAL_OFFSET * 100.0f);
+
+  // vrať data jako KVs (žádné query-stringy)
+  std::vector<KV> kv;
+  kv.push_back({"press",    String(pressure, 1)});   // hPa
+  kv.push_back({"altitude", String(altitude, 1)});   // m
+  return kv;
 }

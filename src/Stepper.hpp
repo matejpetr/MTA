@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "actuator.hpp"
-#include "Parser.hpp"
+
 
 void Stepper_config(int pin1, int pin2, int pin3, int pin4, int angle, bool dir, int rpm);
 void Stepper_reset();

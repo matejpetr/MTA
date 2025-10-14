@@ -1,25 +1,22 @@
-#include <Setup.hpp>
 #include "Senzor_HC_SR04.hpp"
+#include <NewPing.h>
 
-void HCSR04_update(int trig, int echo, int limit, int delayMs) {
-  NewPing sonar(trig, echo, limit);
-  delay(delayMs);  // Wait 40ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
-
-  //int dist = sonar.ping_cm();
-  unsigned int us = sonar.ping();
-  float dist = us / 57.0f;  // cm, s desetinnými místy
-
-  String out = "?type=HCSR04&id=6&distance=" + String(dist, 1);
-  if (ResponseAll) globalBuffer += out;
-  else Serial.println(out);
-}
-
-bool HCSR04_init(int trig, int echo, int limit) {
-  NewPing sonar(trig, echo, limit);
+bool HCSR04::init() {
+  NewPing sonar(_trig, _echo, _limit);
   int dist = sonar.ping_cm();
-  return (dist > 2);  
+  return (dist > 2);                // stejné chování jako dřív
 }
 
-void HCSR04_reset() {
-  // není potřeba žádná akce
+std::vector<KV> HCSR04::update() {
+  std::vector<KV> kv;
+
+  NewPing sonar(_trig, _echo, _limit);
+  delay(_delayMs);                  // ~20 pingů/s; 29 ms je minimum
+
+  // původní výpočet: us / 57.0f -> cm s desetinnými místy
+  const unsigned int us = sonar.ping();
+  const float dist = us / 57.0f;
+
+  kv.push_back({"distance", String(dist, 1)});
+  return kv;
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "actuator.hpp"
-#include "Parser.hpp"
+
 
 void Laser_config(int pin, bool control);
 void Laser_reset(int pin);

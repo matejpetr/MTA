@@ -1,49 +1,48 @@
-#include <Setup.hpp>
 #include "Senzor_HallLin.hpp"
+#include <math.h>
 
-void HallLin_update(int pin, int res, String unit) {
-  analogReadResolution(res);
-  int raw = analogRead(pin);
+bool HallLin::init() {
+  int raw1 = analogRead(_pin);
+  delay(10);
+  int raw2 = analogRead(_pin);
 
-  float result;
-  String label;
+  float voltage1 = raw1 * (3.3f / 4095.0f);
+  float voltage2 = raw2 * (3.3f / 4095.0f);
+  float diff = fabsf(voltage1 - voltage2);
 
-  if (unit == "ADC") {
-    result = raw;
-    label = "ADC";
+  return (voltage1 >= 0.9f && voltage1 <= 2.0f) && (diff < 0.3f);
+}
+
+std::vector<KV> HallLin::update() {
+  std::vector<KV> kv;
+
+  analogReadResolution(_res);
+  const int raw = analogRead(_pin);
+
+  float result = 0.0f;
+  String key;
+
+  if (_unit == "ADC") {
+    result = static_cast<float>(raw);
+    key = "ADC";
   } else {
-    float Vref = 3.3;
-    int maxADC = pow(2, res) - 1;
-    float voltage = (raw / (float)maxADC) * Vref;
+    const float Vref = 3.3f;
+    const int   maxADC = (1 << _res) - 1;
+    const float voltage = (static_cast<float>(raw) / static_cast<float>(maxADC)) * Vref;
 
-    if (unit == "Induction") {
-      float zeroOffset = Vref / 2.0;        // napětí bez pole (1.65 V)
-      float sensitivity = 0.0025;           // 2.5 mV/G = 0.0025 V/G
-      result = ((voltage - zeroOffset) / sensitivity) * 0.1;  // V → G → mT
-      label = "Induction";
+    if (_unit == "Induction") {
+      // 2.5 mV/G, zero na Vref/2 => výstup v mT (G * 0.1)
+      const float zeroOffset  = Vref / 2.0f;   // ~1.65 V
+      const float sensitivity = 0.0025f;       // V/G
+      result = ((voltage - zeroOffset) / sensitivity) * 0.1f;  // mT
+      key = "Induction";
     } else {
+      // default "Voltage"
       result = voltage;
-      label = "Voltage";
+      key = "Voltage";
     }
   }
 
-  String out = "?type=HallLin&id=17&" + label + "=" + String(result, 2);
-  if (ResponseAll) globalBuffer += out;
-  else Serial.println(out);
-}
-
-bool HallLin_init(int pin) {
-  int raw1 = analogRead(pin);
-  delay(10);
-  int raw2 = analogRead(pin);
-
-  float voltage1 = raw1 * (3.3 / 4095.0);
-  float voltage2 = raw2 * (3.3 / 4095.0);
-
-  float diff = abs(voltage1 - voltage2);
-  return (voltage1 >= 0.9 && voltage1 <= 2.0) && (diff < 0.3);
-}
-
-void HallLin_reset() {
-  
+  kv.push_back({ key, String(result, 2) });
+  return kv;
 }

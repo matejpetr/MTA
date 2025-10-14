@@ -8,7 +8,6 @@ void Color7_config(int pin, bool control){
 }
 
 
-
 void Color7_reset(int pin){
     digitalWrite(pin, LOW);
 }

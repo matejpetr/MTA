@@ -1,7 +1,6 @@
 #ifndef ACTUATOR_HPP
 #define ACTUATOR_HPP
-
-#include "Parser.hpp"
+#include "sensor.hpp"
 
 // Třída Actuator
 class Actuator {

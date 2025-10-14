@@ -1,23 +1,11 @@
 #include "libs.hpp"
 #include "GVL.hpp"
-#include "Parser.hpp"
 #include <HardwareSerial.h>
 #include "vscp_port.hpp"  
 
 extern "C" void VSCP_SetupRegisterAll();
 extern "C" void VSCP_Poll();
 
-
-
-// --- Deklarace funkcí (beze změny rozhraní vůči třídám) ---
-void SensorUPDATE(int sensorID);
-void SensorUPDATE_ALL();
-void SensorINIT();
-void SensorRESET(int sensorID);
-void SensorRESET_ALL();
-
-void ActuatorRESET_ALL();
-void ActuatorRESET(int actuatorID);
 
 
 /*
@@ -31,6 +19,7 @@ void ActuatorRESET(int actuatorID);
  *  - prefix: 'S' nebo 'A'
  *  - index:  >=0 pro konkrétní prvek, -1 pokud jde o "všechny" 
 */
+
 
 // --- Globální seznamy ---
 Sensor* SeznamSenzoru[] = {
@@ -89,29 +78,27 @@ Actuator* SeznamAktuatoru[] = {
 
 int PocetAktuatoru = sizeof(SeznamAktuatoru) / sizeof(SeznamAktuatoru[0]);
 
-String globalBuffer = "";
-bool ResponseAll = false;
+
 
 void setup()
 {
-  #if USE_HW_UART
-  // Přesměruj protokol na Serial1 s vlastními piny
+  #if USE_HW_UART  //HW serial
   VSCP_STREAM.begin(VSCP_BAUD, SERIAL_8N1, VSCP_RX_PIN, VSCP_TX_PIN);
-
-  // (Volitelné) Debug přes USB Serial
-  Serial.begin(115200);
+  //Serial.begin(115200);
   delay(200);
-  Serial.println("DBG: VSCP po Serial1");
-#else
-  // Protokol po USB Serial
+  VSCP_STREAM.println("DBG: VSCP po Serial1");
+#else // USB Serial
+  
   VSCP_STREAM.begin(VSCP_BAUD);
   delay(200);
   VSCP_STREAM.println("DBG: VSCP po USB Serial");
 #endif
-  VSCP_SetupRegisterAll();
-  Serial.setTimeout(0);
 
-  Encoder_init(term3,term4);
+  VSCP_STREAM.println("fungujeme ?");
+  VSCP_SetupRegisterAll();
+  VSCP_STREAM.setTimeout(0);
+
+  //Encoder_init(term3,term4);
   sensors.begin();
   I2C.begin(xSDA, xSCL);
   tcs.begin(0x29,&I2C);
@@ -121,133 +108,7 @@ void setup()
   myServo.attach(term1);
 }
 
-String serialBuffer = "";
 
 void loop() {
-  
   VSCP_Poll();
-
-#if 0 // --- disabled legacy serial parser (replaced by VSCP_Poll) ---
-if (Serial.available()) {
-    char c = Serial.read();
-    if (c == '\n') {
-      serialBuffer.trim();
-      String* result = parseGET(serialBuffer);
-
-      String type = result[0];
-      String idStr = result[1];
-      ResponseAll = (result[2] == "true");
-
-      char prefix = 0;
-      int idx = -2; // -1 = all, >=0 = index, -2 = neplatné
-      bool idOk = parseUnifiedId(idStr, prefix, idx);
-
-      // --- UPDATE: jen senzory ---
-      if (type == "UPDATE") {
-        if (!idOk || (prefix != 'S' && idx != -1)) {
-          
-        } else {
-          if (idx == -1) {
-            globalBuffer = "";
-            SensorUPDATE_ALL();
-            Serial.println(globalBuffer);
-          } else if (idx >= 0 && idx < PocetSenzoru) {
-            SeznamSenzoru[idx]->update();
-          }
-        }
-      }
-
-      // --- RESET: senzory i aktuátory ---
-      else if (type == "RESET") {
-        if (!idOk) {
-        } else if (idx == -1) {
-          if (prefix == 'S') {
-            SensorRESET_ALL();
-          } else if (prefix == 'A') {
-            ActuatorRESET_ALL();
-          }
-        } else {
-          if (prefix == 'S') {
-            if (idx >= 0 && idx < PocetSenzoru) SeznamSenzoru[idx]->reset();
-          } else if (prefix == 'A') {
-            if (idx >= 0 && idx < PocetAktuatoru) SeznamAktuatoru[idx]->reset();
-          }
-        }
-      }
-
-      // --- INIT: vrací seznam dostupných senzorů ve formátu Sxx:Type ---
-      else if (type == "INIT") {
-        SensorINIT();
-      }
-
-      // --- CONFIG: podle prefixu S/A pošli do správného seznamu ---
-      else if (type == "CONFIG") {
-        int paramCount;
-        Param* params = parseKeyValueParams(serialBuffer, paramCount);
-
-        if (idOk && idx >= -1) {
-          if (idx == -1) {
-            // hromadná CONFIG se typicky nepoužívá; nic neprovádím
-          } else if (prefix == 'A') {
-            if (idx >= 0 && idx < PocetAktuatoru) {
-              SeznamAktuatoru[idx]->config(params, paramCount);
-            }
-          } else if (prefix == 'S') {
-            if (idx >= 0 && idx < PocetSenzoru) {
-              SeznamSenzoru[idx]->config(params, paramCount);
-            }
-          }
-        }
-      }
-
-      serialBuffer = "";
-    } else {
-      serialBuffer += c;
-    }
-  }
-#endif
-
-}
-
-// --- požadavky na senzory ---
-void SensorUPDATE(int sensorID){
-  SeznamSenzoru[sensorID]->update();
-}
-
-void SensorUPDATE_ALL(){
-  for (int i = 0; i < PocetSenzoru; i++) {
-    SeznamSenzoru[i]->update();
-  }
-}
-
-void SensorINIT(){
-  String result = "?";
-  for (int i = 0; i < PocetSenzoru; i++) {
-    if (SeznamSenzoru[i]->init()) {
-      result += makeId('S', i) + ":" + SeznamSenzoru[i]->getType() + ",";
-    }
-  }
-  if (result.endsWith(",")) result.remove(result.length() - 1);
-  Serial.println(result);
-}
-
-void SensorRESET(int sensorID){
-  SeznamSenzoru[sensorID]->reset();
-}
-
-void SensorRESET_ALL(){
-  for (int i = 0; i < PocetSenzoru; i++) {
-    SeznamSenzoru[i]->reset();
-  }
-}
-
-// --- požadavky na aktuátory ---
-void ActuatorRESET_ALL(){
-  for (int i = 0; i < PocetAktuatoru; i++) {
-    SeznamAktuatoru[i]->reset();
-  }
-}
-
-void ActuatorRESET(int actuatorID){
-  SeznamAktuatoru[actuatorID]->reset();
 }
