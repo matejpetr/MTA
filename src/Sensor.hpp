@@ -19,6 +19,8 @@ class Sensor {
     virtual void config(Param* params, int paramCount) {}  // prázdná výchozí implementace
     virtual ~Sensor() {}
     virtual const char* getType() = 0;
+    virtual void attach(const std::vector<int>& pins) { (void)pins; }
+    virtual void detach() {} 
 };
 
 #endif

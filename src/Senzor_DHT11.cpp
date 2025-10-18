@@ -16,4 +16,12 @@ std::vector<KV> DHT11x::update() {
   return kv;
 }
 
+bool DHT11x::init(){ 
+  dht.begin(); 
+  return true; 
+}  
+
+void DHT11x::reset() { 
+  dht.begin(); 
+}
 

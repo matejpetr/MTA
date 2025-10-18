@@ -71,8 +71,8 @@ Actuator* SeznamAktuatoru[] = {
   new RGB(term1,term2,term3,0,0,50),                //5
   new Color7(term1,true),                           //6
   new Laser(term2,true),                            //7
-  new BuzzP(term2,1000,500),                        //8
-  new BuzzA(term2,true),                            //9
+  new BuzzP(term1,1000,500),                        //8
+  new BuzzA(term1,true),                            //9
   new IRtx(term2,0),                                //10
 };
 
@@ -97,15 +97,16 @@ void setup()
   VSCP_STREAM.println("fungujeme ?");
   VSCP_SetupRegisterAll();
   VSCP_STREAM.setTimeout(0);
-
+  //**********
   //Encoder_init(term3,term4);
-  sensors.begin();
-  I2C.begin(xSDA, xSCL);
-  tcs.begin(0x29,&I2C);
-  dht.begin();
-  bmp.begin(0x76);
-  bmp180.begin(0x77, &I2C);
-  myServo.attach(term1);
+  //**********
+  //sensors.begin();
+  //I2C.begin(xSDA, xSCL);
+  //tcs.begin(0x29,&I2C);
+  //dht.begin();
+  //bmp.begin(0x76);
+  //bmp180.begin(0x77, &I2C);
+  //myServo.attach(term1);
 }
 
 

@@ -21,4 +21,4 @@ DallasTemperature sensors(&oneWire);
 DHT dht(term2, DHT11);
 Adafruit_BMP280 bmp(&I2C);
 Adafruit_BMP085 bmp180;
-Servo myServo;
+//Servo myServo;

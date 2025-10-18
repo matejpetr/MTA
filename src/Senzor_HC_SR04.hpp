@@ -9,6 +9,16 @@ public:
   HCSR04(int trig, int echo)
     : _trig(trig), _echo(echo), _limit(150), _delayMs(40) {} // default: 150 cm, 40 ms
 
+
+    void attach(const std::vector<int>& pins) override {
+      if (pins.size() >= 1) _trig = pins[0];
+      if (pins.size() >= 2) _echo = pins[1];
+    }
+    void detach() override {
+      if (_trig >= 0) pinMode(_trig, INPUT);
+      if (_echo >= 0) pinMode(_echo, INPUT);
+    }
+
   bool            init()   override;                 // rychlý sanity check
   void            reset()  override { /* no-op */ }
   std::vector<KV> update() override;                 // {"distance", ...}

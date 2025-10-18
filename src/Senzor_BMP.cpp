@@ -23,10 +23,9 @@ Adafruit_BMP280::sensor_filter BMP280::mapFilter(int v) {
 
 // --- životní cyklus ---
 bool BMP280::init() {
-  // I²C piny podle CONNECT
+  I2C.end();
+  delay(2);
   I2C.begin(_sda, _scl);
-  // knihovna pro BMP280 – v původním kódu se volal begin(0x76) bez I2C parametru,
-  // zachovám stejné chování kvůli kompatibilitě
   return bmp.begin(0x76);
 }
 

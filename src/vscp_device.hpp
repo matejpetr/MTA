@@ -37,7 +37,8 @@ private:
   void handleCONNECT(const std::map<String,String>& kv);
   void handleDISCONNECT(const std::map<String,String>& kv);
   void handleUPDATE(const std::map<String,String>& kv);
-  void handleCONFIG(const std::map<String,String>& kv);  
+  void handleCONFIG(const std::map<String,String>& kv);
+  //void handleRESET(const std::map<String,String>& kv);   
 
   std::map<String, UpdateFn> updateHandlers; // id -> callback
   std::map<String, int>      idToPin;        // id -> pin

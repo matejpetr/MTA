@@ -11,6 +11,21 @@ public:
   BuzzP(int pin, int freq, int duration)
     : _pin(pin), _freq(freq), _duration(duration) {}
 
+  void attach(const std::vector<int>& pins) override {
+  if (!pins.empty()) {
+    // bezpečně ukonči případný běh na starém pinu
+    if (_pin >= 0 && _pin != pins[0]) noTone(_pin);
+    _pin = pins[0];
+    }
+  }
+
+  void detach() override {
+  if (_pin >= 0) {
+    noTone(_pin);
+    pinMode(_pin, INPUT);
+  }
+  }
+
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       if (params[i].key == "pin") _pin = params[i].value.toInt();
@@ -21,6 +36,7 @@ public:
   }
 
   void reset() override { BuzzP_reset(_pin); }
+  void init() override;
 
 private:
   int _pin;

@@ -1,41 +1,45 @@
 #include "SG90.hpp"
-#include <Arduino.h>
-#include <ESP32Servo.h>
 
+// Interní pomocná funkce pro „kompatibilní“ volání mimo třídu.
+// Nepoužívá členské servo – má svůj statický objekt,
+// aby se nebilo s instancemi SG90 v poli aktuátorů.
+static Servo s_globalServo;
+static int   s_lastAngle = 0;
 
-extern Servo myServo;
-void control(Servo &s, int start, int end, int speedMs);
-
-
-static int lastAngle = 0;  // začíná ve středu
-void SG90_config(int pin, int angle, int speed){
-  angle = constrain(angle, 0, 180);
-  int speedMs = map(speed, 0, 100, 100, 0);
-
-  myServo.attach(pin);
-
-  if (angle != lastAngle) {
-    control(myServo, lastAngle, angle, speedMs);
-    lastAngle = angle;
-  }
-
+static inline int speedToDelayMs_(int speed) {
+  speed = constrain(speed, 0, 100);
+  return map(speed, 0, 100, 100, 0);
 }
 
-
-void SG90_reset(int pin){
-  myServo.attach(pin); 
-  control(myServo, lastAngle, 0, 0);
-  lastAngle = 0;
-
-}
-
-
-
-void control(Servo &s, int start, int end, int speedMs) {
+static void control_(Servo &s, int start, int end, int speedMs) {
+  start = constrain(start, 0, 180);
+  end   = constrain(end,   0, 180);
+  if (speedMs <= 0) { s.write(end); return; }
   int step = (start < end) ? 1 : -1;
   for (int pos = start; pos != end; pos += step) {
     s.write(pos);
-    delay(speedMs);  
+    delay(speedMs);
   }
-  s.write(end); //pro jistotu znovu zápis stejného úhlu
+  s.write(end);
+}
+
+// Volná funkce (kompatibilita se starým kódem)
+void SG90_config(int pin, int angle, int speed) {
+  angle = constrain(angle, 0, 180);
+  int speedMs = speedToDelayMs_(speed);
+
+  if (!s_globalServo.attached()) s_globalServo.attach(pin);
+  else {
+    // pokud je na jiném pinu, přepni
+    // (Servo knihovna nepodporuje přímo getPin, tak odpojíme a znovu připojíme)
+    s_globalServo.detach();
+    s_globalServo.attach(pin);
+  }
+
+  if (angle != s_lastAngle) {
+    control_(s_globalServo, s_lastAngle, angle, speedMs);
+    s_lastAngle = angle;
+  } else {
+    s_globalServo.write(angle);
+  }
 }

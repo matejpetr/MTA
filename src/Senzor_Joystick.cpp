@@ -33,10 +33,12 @@ int Joystick::pctToAdcTol_(int pct) const {
 
 bool Joystick::init() {
   // první nastavení pinů
-  if (!_pinsInited) {
+  /*if (!_pinsInited) {
     pinMode(_sw, INPUT_PULLUP);
     _pinsInited = true;
   }
+  
+
   // kalibrace středu (pokud ještě nebyla)
   calibrateCenter_((_prevRes > 0) ? _prevRes : _res);
 
@@ -44,6 +46,8 @@ bool Joystick::init() {
   const int xv = analogRead(_x);
   const int yv = analogRead(_y);
   return (xv >= 0 && yv >= 0);
+  */
+ return true;
 }
 
 std::vector<KV> Joystick::update() {

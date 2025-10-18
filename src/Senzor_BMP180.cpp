@@ -6,7 +6,10 @@ extern TwoWire I2C;
 extern Adafruit_BMP085 bmp180;
 
 bool BMP180::init() {
+  I2C.end();
+  delay(2);
   I2C.begin(_sda, _scl);
+  //bmp180.begin(0x77, &I2C);
   return bmp180.begin(0x77, &I2C);
 }
 

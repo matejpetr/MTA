@@ -1,8 +1,50 @@
 #include "vscp_device.hpp"
+#include <vector>
+#include "vscp_glue.hpp"
 
 // Hooks defined in vscp_glue.cpp
 extern "C" void VSCP_OnConnect(const String& id, int pin);
 bool VSCP_OnConfig(const String& id, const std::map<String,String>& params);
+
+// nahraď existující verzi
+static std::vector<int> parsePinsList(String pinsRaw) {
+  std::vector<int> pins;
+  pinsRaw.trim();
+  pinsRaw.replace(" ", "");
+  if (!pinsRaw.length()) return pins;
+
+  int start = 0;
+  while (start < pinsRaw.length() && pins.size() < 4) {  // <<< AŽ 4 PINY
+    int comma = pinsRaw.indexOf(',', start);
+    String tok = (comma >= 0) ? pinsRaw.substring(start, comma) : pinsRaw.substring(start);
+    if (tok.length()) {
+      int v = tok.toInt();
+      if (v >= 0) pins.push_back(v);
+    }
+    if (comma < 0) break;
+    start = comma + 1;
+  }
+  return pins;
+}
+
+
+
+static bool validEsp32Pin(int p) {
+  /*
+  if (p >= 6 && p <= 11) return false;   // flash-piny
+  return (p >= 0 && p <= 39);
+  */
+ return true;
+}
+
+static bool validIdSAxx(const String& id) {
+  return id.length() == 3 &&
+         (id.charAt(0) == 'S' || id.charAt(0) == 'A') &&
+         isDigit(id.charAt(1)) && isDigit(id.charAt(2));
+}
+
+
+
 
 int VSCPDevice::getPin(const String& id) const {
   auto it = idToPin.find(id);
@@ -76,7 +118,8 @@ void VSCPDevice::handleRequest(const String& line) {
   if (type == "CONNECT")     { handleCONNECT(kv); return; }
   if (type == "DISCONNECT")  { handleDISCONNECT(kv); return; }
   if (type == "UPDATE")      { handleUPDATE(kv); return; }
-  if (type == "CONFIG")      { handleCONFIG(kv); return; }  
+  if (type == "CONFIG")      { handleCONFIG(kv); return; } 
+  //if (type == "RESET")       { handleRESET(kv); return; } 
 
   auto itId = kv.find("id");
   String id = (itId != kv.end()) ? String(itId->second.c_str()) : String(""); 
@@ -103,28 +146,75 @@ void VSCPDevice::handleINIT(const std::map<String,String>& kv) {
 }
 
 void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
-  auto itId  = kv.find("id");
-  auto itPin = kv.find("pin");
-  if (itId == kv.end() || itPin == kv.end()) {
-    sendERR("", 400, "missing_id_or_pin");
+  auto itId   = kv.find("id");
+  auto itPins = kv.find("pins"); // nový parametr (1–2 piny, čárkou)
+  auto itPin  = kv.find("pin");  // starý parametr (fallback: 1 pin)
+
+  if (itId == kv.end() || (itPins == kv.end() && itPin == kv.end())) {
+    sendERR("", 400, "missing_id_or_pins");
     return;
   }
+
   String id = itId->second.c_str();
-  int pin   = String(itPin->second.c_str()).toInt();
- 
-  if (!(id.length() == 3 && id.charAt(0) == 'S' &&
-        isDigit(id.charAt(1)) && isDigit(id.charAt(2)))) {
-    sendERR(id, 422, "invalid_id_format"); 
-    return;
+
+  // Povolit Sxx i Axx (např. S07, A02)
+  auto validIdSAxx = [](const String& s){
+    return s.length() == 3 &&
+           (s.charAt(0) == 'S' || s.charAt(0) == 'A') &&
+           isDigit(s.charAt(1)) && isDigit(s.charAt(2));
+  };
+  if (!validIdSAxx(id)) { sendERR(id, 422, "invalid_id_format"); return; }
+
+  // Rozparsuj piny
+  std::vector<int> pins;
+  if (itPins != kv.end()) {
+    String pinsRaw = itPins->second.c_str();
+    pinsRaw.replace(" ", "");
+    int start = 0;
+    while (start < pinsRaw.length() && pins.size() < 2) {
+      int comma = pinsRaw.indexOf(',', start);
+      String tok = (comma >= 0) ? pinsRaw.substring(start, comma) : pinsRaw.substring(start);
+      if (tok.length()) {
+        int v = tok.toInt();
+        if (v >= 0) pins.push_back(v);
+      }
+      if (comma < 0) break;
+      start = comma + 1;
+    }
+  } else {
+    int p = String(itPin->second.c_str()).toInt();
+    if (p >= 0) pins.push_back(p);
   }
 
-  if (pin < 0) { sendERR(id, 400, "invalid_pin"); return; }
-  if (idToPin.find(id) != idToPin.end()) { sendERR(id, 409, "already_connected"); return; }
+  if (pins.empty() || pins.size() > 4) { sendERR(id, 400, "invalid_pins_count"); return; }
 
-  idToPin[id] = pin;
-  VSCP_OnConnect(id, pin);
+  auto cvalidEsp32Pin = [](int p){
+    //if (p >= 6 && p <= 11) return false; // flash piny
+    //return (p >= 0 && p <= 39);
+    return (p>0);
+  };
+  for (int p : pins) {
+    if (!validEsp32Pin(p)) { sendERR(id, 400, "invalid_pin"); return; }
+  }
+
+  // Ulož „hlavní“ pin kvůli kontrole připojení (platí pro Sxx i Axx)
+  idToPin[id] = pins[0];
+
+  // Pošli piny do senzoru/aktuátoru (umožňuje dynamickou změnu pinů za běhu)
+  VSCP_OnConnect(id, pins);
+
   sendOK(id);
 }
+
+
+  // *** DYNAMICKÉ PŘEPOJENÍ ***
+  // Už neblokuj opakované CONNECT (dřív 409). Prostě přepiš.
+  // Pokud si chceš piny držet, změň mapu na std::map<String,std::vector<int>> idToPins;
+  // idToPins[id] = pins;
+
+  // vícepinový hook -> uvnitř zavolá Sensor/Actuator::attach(pins)
+
+
 
 void VSCPDevice::handleDISCONNECT(const std::map<String,String>& kv) {
   auto itId = kv.find("id");
@@ -132,6 +222,7 @@ void VSCPDevice::handleDISCONNECT(const std::map<String,String>& kv) {
   String id = itId->second.c_str();
   auto it = idToPin.find(id);
   if (it == idToPin.end()) { sendERR(id, 404, "not_connected"); return; }
+  VSCP_OnDisconnect(id);
   idToPin.erase(it);
   sendOK(id);
 }
@@ -167,13 +258,18 @@ void VSCPDevice::handleCONFIG(const std::map<String,String>& kv) {
   String id = itId->second.c_str();
 
 #if VSCP_REQUIRE_CONNECT
-  if (getPin(id) < 0) { sendERR(id, 409, "not_connected"); return; }
+  // Vyžaduj CONNECT před CONFIG pro Sxx i Axx
+  if (getPin(id) < 0) { 
+    sendERR(id, 409, "not_connected");
+    return;
+  }
 #endif
 
-  // Build parameter map excluding protocol keys
+  // Vyrob mapu params bez protokolových klíčů
   std::map<String,String> params;
   for (auto &p : kv) {
-    if (p.first == "type" || p.first == "id" || p.first == "pin" || p.first == "api") continue;
+    if (p.first == "type" || p.first == "id" || p.first == "pin" || p.first == "api")
+      continue;
     params[p.first] = p.second;
   }
   if (params.empty()) { sendERR(id, 400, "missing_params"); return; }
@@ -182,9 +278,11 @@ void VSCPDevice::handleCONFIG(const std::map<String,String>& kv) {
   try {
     ok = VSCP_OnConfig(id, params);
   } catch (...) {
-    sendERR(id, 500, "config_exception"); return;
+    sendERR(id, 500, "config_exception"); 
+    return;
   }
 
   if (!ok) { sendERR(id, 422, "config_invalid"); return; }
   sendOK(id);
 }
+

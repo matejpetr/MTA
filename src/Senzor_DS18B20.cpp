@@ -40,3 +40,13 @@ std::vector<KV> DS18B20::update() {
   kv.push_back({"alarm", alarm});
   return kv;
 }
+
+
+bool DS18B20::init() {
+     _sensors->begin();
+     return true;
+}
+
+void DS18B20::reset() {
+    if (_sensors) _sensors->begin();
+}

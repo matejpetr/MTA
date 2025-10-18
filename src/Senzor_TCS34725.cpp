@@ -27,13 +27,24 @@ static tcs34725Gain_t mapGain_(int g) {
 
 bool TCS34725::init() {
   I2C.begin(_sda, _scl);
-  if (!tcs.begin(0x29, &I2C)) return false;
-  applyConfig_();         // po initu rovnou aplikuj poslední config
+
+  if (!tcs.begin(0x29, &I2C)) {
+    _tcsEnabled = false;
+    return false;
+  }
+
+  applyConfig_();
+  tcs.enable();
+
+  _tcsEnabled = true;
+  _readyAtMs  = millis() + _itime + 5;  // _itime máš v ms
+  _blockFirst = true;                   // <<< první UPDATE počká
+
   return true;
 }
 
+
 void TCS34725::reset() {
-  // reinit na stejné sběrnici/adrese
   tcs.begin(0x29, &I2C);
   applyConfig_();
 }
@@ -45,35 +56,54 @@ void TCS34725::applyConfig_() {
 }
 
 std::vector<KV> TCS34725::update() {
-  uint16_t r, g, b, c;
-  tcs.getRawData(&r, &g, &b, &c);
-  if (c == 0) c = 1; // ochrana před dělením nulou
+  std::vector<KV> kv;
 
-  // normalizace a korekce (zachováno z původního kódu)
+  // ID check – akceptuj 0x44 i 0x4D
+  uint8_t id = tcs.read8(TCS34725_ID);
+  if (id != 0x44 && id != 0x4D) {
+    if (!init()) return kv;            // no content
+    // _blockFirst = true už je nastaven v init()
+    return kv;                         // první volání po re-init = 204 (nebo si níže zablokuje)
+  }
+
+  // Warm-up: ještě neuplynula integrační doba?
+  long msLeft = (long)(_readyAtMs - millis());
+  if (!_tcsEnabled || msLeft > 0) {
+    if (_blockFirst) {
+      // poprvé po CONNECT/RESET čekáme a hned vrátíme data
+      if (msLeft > 0) delay(msLeft);
+      _blockFirst = false;
+    } else {
+      return kv;   // další volání před _readyAtMs → 204
+    }
+  }
+
+  uint16_t r,g,b,c;
+  tcs.getRawData(&r,&g,&b,&c);
+
+  // Auto-recover: pokud by i tak byly samé nuly (typicky hned po power-cycle modulu)
+  if (r==0 && g==0 && b==0 && c==0) {
+    tcs.disable(); tcs.enable();
+    _readyAtMs  = millis() + _itime + 5;
+    _blockFirst = true;                // při re-enable zase blokuj první
+    return kv;                         // 204 jen jednou
+  }
+
+  // … tvoje normalizace a push_back(R/G/B) …
+  if (c == 0) c = 1;
   float rn = (float)r / (c + 1);
   float gn = (float)g / (c + 1);
   float bn = (float)b / (c + 1);
 
-  const float R_CORR = 0.7f;
-  const float G_CORR = 1.1f;
-  const float B_CORR = 1.7f;
-
+  const float R_CORR = 0.7f, G_CORR = 1.1f, B_CORR = 1.7f;
   rn *= R_CORR; gn *= G_CORR; bn *= B_CORR;
+  float maxRGB = max(rn, max(gn, bn));
+  if (maxRGB > 1.0f) { rn/=maxRGB; gn/=maxRGB; bn/=maxRGB; }
 
-  float maxRGB = rn;
-  if (gn > maxRGB) maxRGB = gn;
-  if (bn > maxRGB) maxRGB = bn;
-  if (maxRGB > 1.0f) {
-    rn /= maxRGB; gn /= maxRGB; bn /= maxRGB;
-  }
-
-  const uint8_t r8 = (uint8_t)constrain(rn * 255.0f, 0.0f, 255.0f);
-  const uint8_t g8 = (uint8_t)constrain(gn * 255.0f, 0.0f, 255.0f);
-  const uint8_t b8 = (uint8_t)constrain(bn * 255.0f, 0.0f, 255.0f);
-
-  std::vector<KV> kv;
-  kv.push_back({"R", String(r8)});
-  kv.push_back({"G", String(g8)});
-  kv.push_back({"B", String(b8)});
+  kv.push_back({"R", String((uint8_t)constrain(rn*255.0f,0.0f,255.0f))});
+  kv.push_back({"G", String((uint8_t)constrain(gn*255.0f,0.0f,255.0f))});
+  kv.push_back({"B", String((uint8_t)constrain(bn*255.0f,0.0f,255.0f))});
   return kv;
 }
+
+

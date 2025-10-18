@@ -1,8 +1,11 @@
 #include <Arduino.h>
 #include "vscp_device.hpp"
+#include "vscp_glue.hpp"
 #include "Sensor.hpp"
 #include <vector>
 #include <map>
+#include "Actuator.hpp"       
+
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -12,8 +15,36 @@ using std::vector;
 
 extern Sensor* SeznamSenzoru[];
 extern int PocetSenzoru;
+extern Actuator* SeznamAktuatoru[];   
+extern int PocetAktuatoru;            
 
 VSCPDevice vscp;
+
+static std::vector<uint8_t> g_attachedS; // senzory
+static std::vector<uint8_t> g_attachedA; // aktuátory
+
+struct ParsedId {
+  char group;   // 'S' nebo 'A'
+  int  index;   // >=0 konkrétní prvek; -1 = wildcard '*'
+};
+
+static ParsedId parseUnifiedId(const String& raw, char defaultGroup = 'S') {
+  ParsedId out{ defaultGroup, -2 };
+  if (!raw.length()) return out;
+
+  if ((raw[0] == 'S') || (raw[0] == 'A')) {
+    out.group = raw[0];
+    if (raw.length() >= 2 && raw[1] == '*') { out.index = -1; return out; }
+    out.index = String(raw.c_str()+1).toInt();
+  } else if (raw[0] == '*') {
+    out.index = -1;
+  } else {
+    // čisté číslo – kvůli zpětné kompatibilitě beru jako Sxx
+    out.group = defaultGroup;
+    out.index = raw.toInt();
+  }
+  return out;
+}
 
 // --- DS18B20 (nastavíme pin přes CONNECT a hlídáme alarmy přes CONFIG) ---
 static int ds_pin = -1;
@@ -117,44 +148,136 @@ extern "C" void VSCP_Poll() {
 }
 
 // CONNECT hook (init senzoru + DS bus)
-extern "C" void VSCP_OnConnect(const String& id, int pin) {
-  const int idx = idToIndex_Sxx(id);
-  if (idx >= 0 && idx < PocetSenzoru) {
-    if ((int)g_inited.size() <= idx) g_inited.resize(idx+1, 0);
-    if (!g_inited[idx]) { SeznamSenzoru[idx]->init(); g_inited[idx] = 1; }
+void VSCP_OnConnect(const String& id, const std::vector<int>& pins) {
+  ParsedId pid = parseUnifiedId(id, 'S');
+
+  if (pid.group == 'S') {
+    int idx = pid.index;
+    if (idx >= 0 && idx < PocetSenzoru) {
+      if ((int)g_attachedS.size() <= idx) g_attachedS.resize(idx+1, 0);
+
+      // když už něco bylo připojeno, nejdřív uvolni staré piny
+      if (g_attachedS[idx]) SeznamSenzoru[idx]->detach();
+
+      // 1) přivážeme nové piny
+      SeznamSenzoru[idx]->attach(pins);
+
+      // 2) až teď inicializace HW (idempotentně)
+      SeznamSenzoru[idx]->init();
+
+      g_attachedS[idx] = 1;
+
+      // speciál pro DS18B20 (pokud používáš S00) – využij první pin
+      if (pid.index == 0 && !pins.empty() && pins[0] >= 0) {
+        ds_setup(pins[0]);
+      }
+    }
+    return;
   }
-  if (id == "S00" && pin >= 0) {
-    ds_setup(pin);
+
+  if (pid.group == 'A') {
+    int idx = pid.index;
+    if (idx >= 0 && idx < PocetAktuatoru) {
+      if ((int)g_attachedA.size() <= idx) g_attachedA.resize(idx+1, 0);
+      if (g_attachedA[idx]) SeznamAktuatoru[idx]->detach();
+
+      SeznamAktuatoru[idx]->attach(pins); // 1) piny
+      SeznamAktuatoru[idx]->init();       // 2) init po attach
+
+      g_attachedA[idx] = 1;
+    }
+    return;
   }
 }
 
+extern "C" void VSCP_OnConnect(const String& id, int pin) {
+  std::vector<int> v; 
+  if (pin >= 0) v.push_back(pin);
+  VSCP_OnConnect(id, v);
+}
+
+// NOVÉ: DISCONNECT → jen zavoláme detach, ať se HW uvolní
+void VSCP_OnDisconnect(const String& id) {
+  ParsedId pid = parseUnifiedId(id, 'S');
+  if (pid.group == 'S') {
+    int idx = pid.index;
+    if (idx >= 0 && idx < PocetSenzoru) {
+      SeznamSenzoru[idx]->detach();
+      if ((int)g_attachedS.size() > idx) g_attachedS[idx] = 0;
+    }
+  } else if (pid.group == 'A') {
+    int idx = pid.index;
+    if (idx >= 0 && idx < PocetAktuatoru) {
+      SeznamAktuatoru[idx]->detach();
+      if ((int)g_attachedA.size() > idx) g_attachedA[idx] = 0;
+    }
+  }
+}
 
 // CONFIG hook — převede parametry na Param{key,value} a zavolá sensor->config,
 // zároveň obslouží DS18B20 alarm limity (LowAlarm/HighAlarm). Vrací true pokud něco použil.
 bool VSCP_OnConfig(const String& id, const std::map<String,String>& params) {
   bool used = false;
 
-  // DS18B20 alarmy
-  if (id == "S00") {
-    auto itL = params.find("LowAlarm");
-    if (itL != params.end()) { ds_low_alarm = String(itL->second.c_str()).toFloat(); used = true; }
-    auto itH = params.find("HighAlarm");
-    if (itH != params.end()) { ds_high_alarm = String(itH->second.c_str()).toFloat(); used = true; }
+  ParsedId pid = parseUnifiedId(id, 'S');
+
+  // ==== speciály + obecné předání senzorům ====
+  if (pid.group == 'S') {
+    // (Tvoje dosavadní DS18B20 LowAlarm/HighAlarm pro S00...)
+    if (pid.index == 0) {
+      auto itL = params.find("LowAlarm");
+      if (itL != params.end()) { ds_low_alarm = String(itL->second.c_str()).toFloat(); used = true; }
+      auto itH = params.find("HighAlarm");
+      if (itH != params.end()) { ds_high_alarm = String(itH->second.c_str()).toFloat(); used = true; }
+    }
+
+    int idx = pid.index;
+    if (idx >= 0 && idx < PocetSenzoru) {
+      std::vector<Param> pvec;
+      pvec.reserve(params.size());
+      for (const auto& kv : params) {
+        if (kv.first == "type" || kv.first == "id" || kv.first == "pin" || kv.first == "api") continue;
+        Param p; p.key = kv.first.c_str(); p.value = kv.second.c_str();
+        pvec.push_back(p);
+      }
+      if (!pvec.empty()) {
+        SeznamSenzoru[idx]->config(pvec.data(), (int)pvec.size());
+        used = true;
+      }
+    }
+    return used;
   }
 
-  // Obecná konfigurace senzoru podle indexu z Sxx
-  const int idx = idToIndex_Sxx(id);
-  if (idx >= 0 && idx < PocetSenzoru) {
-    std::vector<Param> pvec;
-    pvec.reserve(params.size());
-    for (const auto& kv : params) {
-      if (kv.first == "type" || kv.first == "id" || kv.first == "pin" || kv.first == "api") continue;
-      Param p; p.key = kv.first.c_str(); p.value = kv.second.c_str();
-      pvec.push_back(p);
-    }
-    if (!pvec.empty()) {
-      SeznamSenzoru[idx]->config(pvec.data(), (int)pvec.size());
-      used = true;
+  // ==== aktuátory ====
+  if (pid.group == 'A') {
+    // wildcard A* dává smysl pro hromadné resetování / hromadné nastavení
+    auto itReset = params.find("reset");
+    bool doReset = (itReset != params.end()) &&
+                   (itReset->second == "1" || itReset->second == "true");
+
+    auto applyOne = [&](int idx){
+      if (idx < 0 || idx >= PocetAktuatoru) return false;
+      if (doReset) {
+        SeznamAktuatoru[idx]->reset();
+        return true;
+      }
+      std::vector<Param> pvec;
+      pvec.reserve(params.size());
+      for (const auto& kv : params) {
+        if (kv.first == "type" || kv.first == "id" || kv.first == "pin" || kv.first == "api" || kv.first == "reset") continue;
+        Param p; p.key = kv.first.c_str(); p.value = kv.second.c_str();
+        pvec.push_back(p);
+      }
+      SeznamAktuatoru[idx]->config(pvec.data(), (int)pvec.size());
+      return true;
+    };
+
+    if (pid.index == -1) {
+      bool any = false;
+      for (int i=0; i<PocetAktuatoru; ++i) any |= applyOne(i);
+      return any;
+    } else {
+      return applyOne(pid.index);
     }
   }
 

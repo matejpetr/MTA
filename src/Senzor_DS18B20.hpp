@@ -13,14 +13,8 @@ public:
     : _sensors(sensors), _res(12), _LAlarm(-55), _HAlarm(125) {}
 
   // Sběrnicový senzor: jednoduché ověření přítomnosti zařízení
-  bool init() override {
-    if (!_sensors) return false;
-    return _sensors->getDeviceCount() > 0;
-  }
-
-  void reset() override {
-    if (_sensors) _sensors->begin();
-  }
+  bool init() override;
+  void reset() override;
 
   // Měření — vrací {"temp", ...}, {"alarm", "LOW|OK|HIGH"}
   std::vector<KV> update() override;

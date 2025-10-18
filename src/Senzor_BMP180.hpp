@@ -3,11 +3,24 @@
 #include <Arduino.h>
 #include <vector>
 #include "Sensor.hpp"
-
+#include <Wire.h>
+extern TwoWire I2C;
 
 class BMP180 : public Sensor {
 public:
   BMP180(int sda, int scl) : _sda(sda), _scl(scl) {}
+
+    void attach(const std::vector<int>& pins) override {
+    if (pins.size() >= 1) _sda = pins[0];
+    if (pins.size() >= 2) _scl = pins[1];
+  }
+
+    void detach() override {
+    if (_sda >= 0) pinMode(_sda, INPUT);
+    if (_scl >= 0) pinMode(_scl, INPUT);
+    I2C.end();
+
+  }
 
   bool init() override;
   std::vector<KV> update() override;

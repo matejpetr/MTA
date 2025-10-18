@@ -18,8 +18,8 @@ public:
   // vrací {"humi", ...}, {"temp", ...}
   std::vector<KV> update() override;
 
-  void        reset() override { dht.begin(); }
-  bool        init()  override { return true; }       // nesběrnicový (stejně jako u ostatních)
+  void        reset() override;
+  bool        init()  override;
   const char* getType() override { return "DHT11"; }
 
   // Konfigurace: Unit = "F" pro Fahrenheit, HI = "true" pro Heat Index
