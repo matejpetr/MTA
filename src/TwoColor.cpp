@@ -7,6 +7,7 @@ static int s_pinG = -1;
 
 // mapujeme 0..100 -> 0..255 (když pošleš mimo rozsah, ořežeme)
 static inline int clamp100(int v) { return v < 0 ? 0 : (v > 100 ? 100 : v); }
+
 static inline int mapToPWM(int brig01_100) {
   brig01_100 = clamp100(brig01_100);
   return map(brig01_100, 0, 100, 0, 255);

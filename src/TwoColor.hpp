@@ -30,6 +30,24 @@ public:
 
   void reset() override { TwoColor_reset(); }
 
+  // DISCONNECT: bezpečně vypne výstupy a uvolní piny
+  void detach() override {
+    // zavoláme reset aby bylo vše vypnuté (implementace může zhasnout LED)
+    TwoColor_reset();
+
+    if (_pinRed >= 0) {
+      // bezpečně vypneme a přepneme na vstup (uvolnění)
+      digitalWrite(_pinRed, LOW);
+      pinMode(_pinRed, INPUT);
+      _pinRed = -1;
+    }
+    if (_pinGreen >= 0) {
+      digitalWrite(_pinGreen, LOW);
+      pinMode(_pinGreen, INPUT);
+      _pinGreen = -1;
+    }
+  }
+
 private:
   int  _pinRed   = -1;
   int  _pinGreen = -1;
