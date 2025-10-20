@@ -3,8 +3,9 @@
 #include <ESP32Servo.h>
 #include "Actuator.hpp"
 
-// Volná funkce kvůli kompatibilitě (definice bude v .cpp)
-void SG90_config(int pin, int angle, int speed);
+// Volné funkce pro kompatibilitu
+void SG90_setPin(int pin);            // pin nastaví attach()
+void SG90_config(int angle, int speed); // konfigurace bez parametru pinu
 
 class SG90 : public Actuator {
 public:
@@ -29,6 +30,7 @@ public:
     // srovnáme do neutrálu rychle (bez zdržení)
     writeSmooth_(0, 0);
     _lastAngle = 0;
+    SG90_setPin(_pin); // zajisti konzistenci volné funkce
   }
 
   // Reset = znovu-inicializace (ne deklarace!)
@@ -43,6 +45,7 @@ public:
         if (_pin >= 0) pinMode(_pin, INPUT);
         _pin = newPin;
         _servo.attach(_pin);
+        SG90_setPin(_pin); // pin pro volnou funkci je brán pouze z attach()
       }
     }
   }
@@ -51,6 +54,7 @@ public:
   void detach() override {
     if (_servo.attached()) _servo.detach();
     if (_pin >= 0) pinMode(_pin, INPUT);
+    SG90_setPin(-1); // uvolnit interní pin
   }
 
 private:

@@ -1,10 +1,15 @@
 #include "SG90.hpp"
 
-// Interní pomocná funkce pro „kompatibilní“ volání mimo třídu.
-// Nepoužívá členské servo – má svůj statický objekt,
-// aby se nebilo s instancemi SG90 v poli aktuátorů.
+// interní statický pin pro volné funkce
+static int s_pin = -1;
+
+// Interní pomocná servo instance (pro volnou funkci kompatibility)
 static Servo s_globalServo;
 static int   s_lastAngle = 0;
+
+void SG90_setPin(int pin) {
+  s_pin = pin;
+}
 
 static inline int speedToDelayMs_(int speed) {
   speed = constrain(speed, 0, 100);
@@ -23,17 +28,17 @@ static void control_(Servo &s, int start, int end, int speedMs) {
   s.write(end);
 }
 
-// Volná funkce (kompatibilita se starým kódem)
-void SG90_config(int pin, int angle, int speed) {
+// Volná funkce (kompatibilita) — používá pin nastavený v attach() přes SG90_setPin()
+void SG90_config(int angle, int speed) {
+  if (s_pin < 0) return;            // pin musí být nastaven attach()
   angle = constrain(angle, 0, 180);
   int speedMs = speedToDelayMs_(speed);
 
-  if (!s_globalServo.attached()) s_globalServo.attach(pin);
+  if (!s_globalServo.attached()) s_globalServo.attach(s_pin);
   else {
     // pokud je na jiném pinu, přepni
-    // (Servo knihovna nepodporuje přímo getPin, tak odpojíme a znovu připojíme)
     s_globalServo.detach();
-    s_globalServo.attach(pin);
+    s_globalServo.attach(s_pin);
   }
 
   if (angle != s_lastAngle) {
