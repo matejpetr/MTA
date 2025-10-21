@@ -1,34 +1,65 @@
 #include "RGB.hpp"
-#include <Arduino.h>
 
-static int pinR;
-static int pinG;
-static int pinB;
+// internal pins managed via RGB_setPins (attach will call it)
+static int s_pinR = -1;
+static int s_pinG = -1;
+static int s_pinB = -1;
 
-void RGB_config(int pR, int pG, int pB, int BrigR, int BrigG, int BrigB) {
-  pinR = pR;
-  pinG = pG;
-  pinB = pB;
+void RGB_setPins(int pinR, int pinG, int pinB) {
+  s_pinR = pinR;
+  s_pinG = pinG;
+  s_pinB = pinB;
+  if (s_pinR >= 0) pinMode(s_pinR, OUTPUT);
+  if (s_pinG >= 0) pinMode(s_pinG, OUTPUT);
+  if (s_pinB >= 0) pinMode(s_pinB, OUTPUT);
+}
 
-  pinMode(pinR, OUTPUT);
-  pinMode(pinG, OUTPUT);
-  pinMode(pinB, OUTPUT);
+static inline int clamp100(int v) { return v < 0 ? 0 : (v > 100 ? 100 : v); }
 
-  BrigR = constrain(BrigR, 0, 100);
-  BrigG = constrain(BrigG, 0, 100);
-  BrigB = constrain(BrigB, 0, 100);
+void RGB_config(int BrigR, int BrigG, int BrigB) {
+  // do nothing if no pins set
+  if (s_pinR < 0 && s_pinG < 0 && s_pinB < 0) return;
+
+  BrigR = clamp100(BrigR);
+  BrigG = clamp100(BrigG);
+  BrigB = clamp100(BrigB);
 
   int pwmR = map(BrigR, 0, 100, 0, 255);
   int pwmG = map(BrigG, 0, 100, 0, 255);
   int pwmB = map(BrigB, 0, 100, 0, 255);
 
-  analogWrite(pinR, pwmR);
-  analogWrite(pinG, pwmG);
-  analogWrite(pinB, pwmB);
+  // aggregate by physical pin (write each pin only once, use max of channels)
+  int pins[3] = { s_pinR, s_pinG, s_pinB };
+  int pwms[3] = { pwmR, pwmG, pwmB };
+
+  int outPins[3] = { -1, -1, -1 };
+  int outPwms[3] = { 0, 0, 0 };
+  int outCount = 0;
+
+  for (int i = 0; i < 3; ++i) {
+    int p = pins[i];
+    if (p < 0) continue;
+    int idx = -1;
+    for (int j = 0; j < outCount; ++j) if (outPins[j] == p) { idx = j; break; }
+    if (idx >= 0) {
+      if (pwms[i] > outPwms[idx]) outPwms[idx] = pwms[i];
+    } else if (outCount < 3) {
+      outPins[outCount] = p;
+      outPwms[outCount] = pwms[i];
+      ++outCount;
+    }
+  }
+
+  for (int i = 0; i < outCount; ++i) {
+    int p = outPins[i];
+    int v = outPwms[i];
+    pinMode(p, OUTPUT);
+    analogWrite(p, v);
+  }
 }
 
 void RGB_reset() {
-    analogWrite(pinR, 0);
-    analogWrite(pinG, 0);
-    analogWrite(pinB,0);
+  if (s_pinR >= 0) { analogWrite(s_pinR, 0); digitalWrite(s_pinR, LOW); }
+  if (s_pinG >= 0) { analogWrite(s_pinG, 0); digitalWrite(s_pinG, LOW); }
+  if (s_pinB >= 0) { analogWrite(s_pinB, 0); digitalWrite(s_pinB, LOW); }
 }

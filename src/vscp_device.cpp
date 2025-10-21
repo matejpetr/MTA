@@ -147,7 +147,7 @@ void VSCPDevice::handleINIT(const std::map<String,String>& kv) {
 
 void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
   auto itId   = kv.find("id");
-  auto itPins = kv.find("pins"); // nový parametr (1–2 piny, čárkou)
+  auto itPins = kv.find("pins"); // nový parametr (1–4 piny, čárkou)
   auto itPin  = kv.find("pin");  // starý parametr (fallback: 1 pin)
 
   if (itId == kv.end() || (itPins == kv.end() && itPin == kv.end())) {
@@ -157,7 +157,7 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
 
   String id = itId->second.c_str();
 
-  // Povolit Sxx i Axx (např. S07, A02)
+  // validace formátu id (Sxx / Axx)
   auto validIdSAxx = [](const String& s){
     return s.length() == 3 &&
            (s.charAt(0) == 'S' || s.charAt(0) == 'A') &&
@@ -165,22 +165,10 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
   };
   if (!validIdSAxx(id)) { sendERR(id, 422, "invalid_id_format"); return; }
 
-  // Rozparsuj piny
+  // Rozparsuj piny (použijeme parsePinsList helper — až 4 piny)
   std::vector<int> pins;
   if (itPins != kv.end()) {
-    String pinsRaw = itPins->second.c_str();
-    pinsRaw.replace(" ", "");
-    int start = 0;
-    while (start < pinsRaw.length() && pins.size() < 2) {
-      int comma = pinsRaw.indexOf(',', start);
-      String tok = (comma >= 0) ? pinsRaw.substring(start, comma) : pinsRaw.substring(start);
-      if (tok.length()) {
-        int v = tok.toInt();
-        if (v >= 0) pins.push_back(v);
-      }
-      if (comma < 0) break;
-      start = comma + 1;
-    }
+    pins = parsePinsList(String(itPins->second.c_str()));
   } else {
     int p = String(itPin->second.c_str()).toInt();
     if (p >= 0) pins.push_back(p);
@@ -188,16 +176,19 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
 
   if (pins.empty() || pins.size() > 4) { sendERR(id, 400, "invalid_pins_count"); return; }
 
+  // konzistentní validace pinů (uprav podle hw)
   auto cvalidEsp32Pin = [](int p){
-    //if (p >= 6 && p <= 11) return false; // flash piny
-    //return (p >= 0 && p <= 39);
-    return (p>0);
+    // uprav přesně podle tvého HW (tady jednoduché negativní guardy)
+    if (p < 0) return false;
+    // zakomentované piny pro flash apod.:
+    // if (p >= 6 && p <= 11) return false;
+    return true;
   };
   for (int p : pins) {
-    if (!validEsp32Pin(p)) { sendERR(id, 400, "invalid_pin"); return; }
+    if (!cvalidEsp32Pin(p)) { sendERR(id, 400, "invalid_pin"); return; }
   }
 
-  // Ulož „hlavní“ pin kvůli kontrole připojení (platí pro Sxx i Axx)
+  // Ulož „hlavní“ pin kvůli kontrole připojení (platí pro Sxx i Axx) — první pin
   idToPin[id] = pins[0];
 
   // Pošli piny do senzoru/aktuátoru (umožňuje dynamickou změnu pinů za běhu)

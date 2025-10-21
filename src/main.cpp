@@ -69,11 +69,12 @@ Actuator* SeznamAktuatoru[] = {
   new TwoColor(term3,term4,'R',50),                 //3
   new TwoColorMini(term4,term3,'G',100),            //4
   new RGB(term1,term2,term3,0,0,50),                //5
-  new Color7(term1,true),                           //6
-  new Laser(term2,true),                            //7
-  new BuzzP(term1,1000,500),                        //8
-  new BuzzA(term1,true),                            //9
-  new IRtx(term2,0),                                //10
+  new RGB(term1,term2,term3,0,0,50),                //6
+  new Color7(term1,true),                           //7
+  new IRtx(term2,0),                                //8
+  new Laser(term2,true),                            //9
+  new BuzzP(term1,1000,500),                        //10
+  new BuzzA(term1,true),                            //11
 };
 
 int PocetAktuatoru = sizeof(SeznamAktuatoru) / sizeof(SeznamAktuatoru[0]);
@@ -94,19 +95,9 @@ void setup()
   VSCP_STREAM.println("DBG: VSCP po USB Serial");
 #endif
 
-  VSCP_STREAM.println("fungujeme ?");
+  //VSCP_STREAM.println("fungujeme ?");
   VSCP_SetupRegisterAll();
   VSCP_STREAM.setTimeout(0);
-  //**********
-  //Encoder_init(term3,term4);
-  //**********
-  //sensors.begin();
-  //I2C.begin(xSDA, xSCL);
-  //tcs.begin(0x29,&I2C);
-  //dht.begin();
-  //bmp.begin(0x76);
-  //bmp180.begin(0x77, &I2C);
-  //myServo.attach(term1);
 }
 
 

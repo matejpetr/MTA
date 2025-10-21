@@ -18,12 +18,11 @@ public:
     void attach(const std::vector<int>& pins) override {
       if (pins.size() >= 1) _x  = pins[0];
       if (pins.size() >= 2) _y  = pins[1];
-      if (pins.size() >= 3) _sw = pins[2];
+
     }
     void detach() override {
       if (_x  >= 0) pinMode(_x, INPUT);
       if (_y  >= 0) pinMode(_y, INPUT);
-      if (_sw >= 0) { detachInterrupt(_sw); pinMode(_sw, INPUT); }
     }
     
   // init: provede kalibraci středu a rychlou kontrolu vstupů
