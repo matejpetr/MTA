@@ -22,8 +22,8 @@ public:
   const char* getType() override { return "Encoder"; }
 
   void attach(const std::vector<int>& pins) override {
-    if (pins.size() >= 1) _pinA = pins[0];
-    if (pins.size() >= 2) _pinB = pins[1];
+    if (pins.size() >= 1) _pinB = pins[0];
+    if (pins.size() >= 2) _pinA = pins[1];
   }
 
   void detach() override;

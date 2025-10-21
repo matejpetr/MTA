@@ -18,7 +18,7 @@ constexpr uint8_t MT = 50; // Measuring time pro Mic (ms)
 OneWire oneWire(term1);
 DallasTemperature sensors(&oneWire);
 
-DHT dht(term2, DHT11);
+//DHT dht(term2, DHT11);
 Adafruit_BMP280 bmp(&I2C);
 Adafruit_BMP085 bmp180;
 //Servo myServo;

@@ -10,6 +10,8 @@
 #define VSCP_BAUD 115200
 #endif
 
+
+
 #if USE_HW_UART
   #ifndef VSCP_RX_PIN
   #define VSCP_RX_PIN 44
