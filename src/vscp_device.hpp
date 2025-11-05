@@ -7,6 +7,7 @@
 #include "vscp_port.hpp"
 #include "sensor.hpp"
 
+// VSCP API verze
 #ifndef VSCP_API_VERSION
 #define VSCP_API_VERSION "1.0"
 #endif
@@ -15,8 +16,7 @@
 #define VSCP_REQUIRE_CONNECT 1
 #endif
 
-//struct KV { String k; String v; };
-
+// VSCP zařízení
 class VSCPDevice {
 public:
   typedef std::function< std::vector<KV>(const String&, int) > UpdateFn;
@@ -38,7 +38,7 @@ private:
   void handleDISCONNECT(const std::map<String,String>& kv);
   void handleUPDATE(const std::map<String,String>& kv);
   void handleCONFIG(const std::map<String,String>& kv);
-  //void handleRESET(const std::map<String,String>& kv);   
+  void handleRESET(const std::map<String,String>& kv);   
 
   std::map<String, UpdateFn> updateHandlers; // id -> callback
   std::map<String, int>      idToPin;        // id -> pin

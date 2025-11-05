@@ -12,9 +12,23 @@ String IRrx::toHex10_(uint32_t v) {
   return String(out);
 }
 
+void IRrx::detach() {
+  if (_irrecv) {
+    delete _irrecv;
+    _irrecv = nullptr;
+  }
+  // uvolnit další zdroje a resetovat stav
+  _task = nullptr;
+  _res = nullptr;
+  _haveAny = false;
+  _latestVal = 0;
+  _lastStoreMs = 0;
+  _pin = -1;
+}
+
 bool IRrx::init() {
   if (_res == nullptr) {
-    _res = new decode_results();      // <<< globální typ
+    _res = new decode_results();      
   }
   startTaskIfNeeded_();
   return true;

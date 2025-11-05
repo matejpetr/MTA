@@ -21,7 +21,7 @@ Adafruit_BMP280::sensor_filter BMP280::mapFilter(int v) {
   return Adafruit_BMP280::FILTER_OFF;
 }
 
-// --- životní cyklus ---
+// init senzoru
 bool BMP280::init() {
   I2C.end();
   delay(2);
@@ -32,7 +32,7 @@ bool BMP280::init() {
 void BMP280::reset() {
   bmp.begin(0x76);
 }
-
+// konfugurace senzoru
 void BMP280::config(Param* params, int count) {
   for (int i = 0; i < count; ++i) {
     if      (params[i].key == "Os_temp")  _os_temp  = params[i].value.toInt();
@@ -49,7 +49,7 @@ void BMP280::config(Param* params, int count) {
   );
 }
 
-// --- měření ---
+// měření hodnot
 std::vector<KV> BMP280::update() {
   // pozn.: původní kód měl kalibrační konstantu `cal = 0`; zachovávám
   const float t = bmp.readTemperature();           // °C

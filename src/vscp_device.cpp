@@ -1,12 +1,14 @@
 #include "vscp_device.hpp"
 #include <vector>
 #include "vscp_glue.hpp"
+#include "main.cpp"
 
-// Hooks defined in vscp_glue.cpp
+// Hooky z vscp_glue.cpp
 extern "C" void VSCP_OnConnect(const String& id, int pin);
 bool VSCP_OnConfig(const String& id, const std::map<String,String>& params);
 
-// nahraď existující verzi
+
+// Rozparsuje řetězec s piny (oddělené čárkami)
 static std::vector<int> parsePinsList(String pinsRaw) {
   std::vector<int> pins;
   pinsRaw.trim();
@@ -14,7 +16,7 @@ static std::vector<int> parsePinsList(String pinsRaw) {
   if (!pinsRaw.length()) return pins;
 
   int start = 0;
-  while (start < pinsRaw.length() && pins.size() < 4) {  // <<< AŽ 4 PINY
+  while (start < pinsRaw.length() && pins.size() < 4) {  // max 4 piny (více nepodporováno)
     int comma = pinsRaw.indexOf(',', start);
     String tok = (comma >= 0) ? pinsRaw.substring(start, comma) : pinsRaw.substring(start);
     if (tok.length()) {
@@ -27,16 +29,15 @@ static std::vector<int> parsePinsList(String pinsRaw) {
   return pins;
 }
 
-
-
+/*
+// Validace hodnoty pinu 
 static bool validEsp32Pin(int p) {
-  /*
-  if (p >= 6 && p <= 11) return false;   // flash-piny
-  return (p >= 0 && p <= 39);
-  */
- return true;
+  if (p < 0) return false;
+  return true;
 }
+*/
 
+// Validace formátu identifikátoru typu Sxx / Axx
 static bool validIdSAxx(const String& id) {
   return id.length() == 3 &&
          (id.charAt(0) == 'S' || id.charAt(0) == 'A') &&
@@ -44,13 +45,13 @@ static bool validIdSAxx(const String& id) {
 }
 
 
-
-
+// Vrátí uložený hlavní pin pro dané id (nebo -1 pokud není připojeno)
 int VSCPDevice::getPin(const String& id) const {
   auto it = idToPin.find(id);
   return (it == idToPin.end()) ? -1 : it->second;
 }
 
+// Čte zprávu ze sériového portu bez blokování, vrací jednu kompletní linku
 String VSCPDevice::readLineNonBlocking() {
   static String buf;
   while (VSCP_STREAM.available()) {
@@ -67,6 +68,7 @@ String VSCPDevice::readLineNonBlocking() {
   return String();
 }
 
+// Parsuje query string (?key=val&...) na mapu klíč→hodnota
 std::map<String,String> VSCPDevice::parseQuery(const String& q) {
   std::map<String,String> kv;
   int i = (q.length() && q[0]=='?') ? 1 : 0;
@@ -83,6 +85,7 @@ std::map<String,String> VSCPDevice::parseQuery(const String& q) {
   return kv;
 }
 
+// Odešle úspěšnou odpověď (status=1) s volitelnými páry k:v
 void VSCPDevice::sendOK(const String& id, const std::vector<KV>& kvs) {
   if (id.length() > 0) {
     VSCP_STREAM.print("?id="); VSCP_STREAM.print(id);
@@ -97,6 +100,7 @@ void VSCPDevice::sendOK(const String& id, const std::vector<KV>& kvs) {
   VSCP_STREAM.println();
 }
 
+// Odešle chybovou odpověď se stavovým kódem a textem chyby(volitelné-třeba sjednotit error msg)
 void VSCPDevice::sendERR(const String& id, int code, const String& msg) {
   if (id.length() > 0) {
     VSCP_STREAM.print("?id="); VSCP_STREAM.print(id);
@@ -108,6 +112,7 @@ void VSCPDevice::sendERR(const String& id, int code, const String& msg) {
   VSCP_STREAM.print("&code="); VSCP_STREAM.println(code);
 }
 
+// Zpracuje příchozí požadavek (line) a odkáže na konkrétní handler
 void VSCPDevice::handleRequest(const String& line) {
   auto kv = parseQuery(line);
   auto itType = kv.find("type");
@@ -119,19 +124,21 @@ void VSCPDevice::handleRequest(const String& line) {
   if (type == "DISCONNECT")  { handleDISCONNECT(kv); return; }
   if (type == "UPDATE")      { handleUPDATE(kv); return; }
   if (type == "CONFIG")      { handleCONFIG(kv); return; } 
-  //if (type == "RESET")       { handleRESET(kv); return; } 
+  if (type == "RESET")       { handleRESET(kv); return; } 
 
   auto itId = kv.find("id");
   String id = (itId != kv.end()) ? String(itId->second.c_str()) : String(""); 
   sendERR(id, 400, "unknown_type");
 }
 
+// Pollovací smyčka: čte sériovou linku non-blocking a volá handler
 void VSCPDevice::poll() {
   String line = readLineNonBlocking();
   if (!line.length()) return;
   handleRequest(line);
 }
 
+// Inicializační handler: kontrola verze API a odpověď OK
 void VSCPDevice::handleINIT(const std::map<String,String>& kv) {
   auto itApi = kv.find("api");
   if (itApi != kv.end()) {
@@ -145,10 +152,11 @@ void VSCPDevice::handleINIT(const std::map<String,String>& kv) {
   
 }
 
+// Zpracuje CONNECT požadavek, validuje id a piny, uloží mapu a volá hook
 void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
   auto itId   = kv.find("id");
-  auto itPins = kv.find("pins"); // nový parametr (1–4 piny, čárkou)
-  auto itPin  = kv.find("pin");  // starý parametr (fallback: 1 pin)
+  auto itPins = kv.find("pins");
+  auto itPin  = kv.find("pin");
 
   if (itId == kv.end() || (itPins == kv.end() && itPin == kv.end())) {
     sendERR("", 400, "missing_id_or_pins");
@@ -165,7 +173,7 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
   };
   if (!validIdSAxx(id)) { sendERR(id, 422, "invalid_id_format"); return; }
 
-  // Rozparsuj piny (použijeme parsePinsList helper — až 4 piny)
+  // Parser pinů 
   std::vector<int> pins;
   if (itPins != kv.end()) {
     pins = parsePinsList(String(itPins->second.c_str()));
@@ -176,19 +184,17 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
 
   if (pins.empty() || pins.size() > 4) { sendERR(id, 400, "invalid_pins_count"); return; }
 
-  // konzistentní validace pinů (uprav podle hw)
+  // validace pinů
   auto cvalidEsp32Pin = [](int p){
-    // uprav přesně podle tvého HW (tady jednoduché negativní guardy)
     if (p < 0) return false;
-    // zakomentované piny pro flash apod.:
-    // if (p >= 6 && p <= 11) return false;
     return true;
   };
+  
   for (int p : pins) {
     if (!cvalidEsp32Pin(p)) { sendERR(id, 400, "invalid_pin"); return; }
   }
 
-  // Ulož „hlavní“ pin kvůli kontrole připojení (platí pro Sxx i Axx) — první pin
+  // Ulož hlavní pin (první v seznamu)
   idToPin[id] = pins[0];
 
   // Pošli piny do senzoru/aktuátoru (umožňuje dynamickou změnu pinů za běhu)
@@ -197,16 +203,7 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
   sendOK(id);
 }
 
-
-  // *** DYNAMICKÉ PŘEPOJENÍ ***
-  // Už neblokuj opakované CONNECT (dřív 409). Prostě přepiš.
-  // Pokud si chceš piny držet, změň mapu na std::map<String,std::vector<int>> idToPins;
-  // idToPins[id] = pins;
-
-  // vícepinový hook -> uvnitř zavolá Sensor/Actuator::attach(pins)
-
-
-
+// Zpracuje DISCONNECT: volá hook, smaže uložený pin a odpoví OK
 void VSCPDevice::handleDISCONNECT(const std::map<String,String>& kv) {
   auto itId = kv.find("id");
   if (itId == kv.end()) { sendERR("", 400, "missing_id"); return; }
@@ -218,6 +215,19 @@ void VSCPDevice::handleDISCONNECT(const std::map<String,String>& kv) {
   sendOK(id);
 }
 
+// Zpracuje RESET: zavolá registrovaný reset handler a resetuje zařízení
+void VSCPDevice::handleRESET(const std::map<String,String>& kv) {
+  auto itId = kv.find("id");
+  if (itId == kv.end()) { sendERR("", 400, "missing_id"); return; }
+  String id = itId->second.c_str();
+
+  
+
+  
+}
+
+
+// Zpracuje UPDATE: zavolá registrovaný update handler a pošle data
 void VSCPDevice::handleUPDATE(const std::map<String,String>& kv) {
   auto itId = kv.find("id");
   if (itId == kv.end()) { sendERR("", 400, "missing_id"); return; }
@@ -243,6 +253,7 @@ void VSCPDevice::handleUPDATE(const std::map<String,String>& kv) {
   sendOK(id, data);
 }
 
+// Zpracuje CONFIG: vyextrahuje parametry a zavolá VSCP_OnConfig hook
 void VSCPDevice::handleCONFIG(const std::map<String,String>& kv) {
   auto itId = kv.find("id");
   if (itId == kv.end()) { sendERR("", 400, "missing_id"); return; }
@@ -256,7 +267,7 @@ void VSCPDevice::handleCONFIG(const std::map<String,String>& kv) {
   }
 #endif
 
-  // Vyrob mapu params bez protokolových klíčů
+  // Vyrob mapu params(pro CONFIG parametry) bez protokolových klíčů
   std::map<String,String> params;
   for (auto &p : kv) {
     if (p.first == "type" || p.first == "id" || p.first == "pin" || p.first == "api")

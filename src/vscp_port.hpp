@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 
-//přepínač Sériové linky
+// přepínač Sériové linky
 #ifndef USE_HW_UART
 #define USE_HW_UART 0 // 0 = USB Serial, 1 = Serial1 (HW)
 #endif
@@ -11,7 +11,7 @@
 #endif
 
 
-
+// definice HW pinů (nevyužito)
 #if USE_HW_UART
   #ifndef VSCP_RX_PIN
   #define VSCP_RX_PIN 44

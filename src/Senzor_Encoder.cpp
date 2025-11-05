@@ -85,7 +85,6 @@ void Rencoder::stopISR() {
     gpio_isr_handler_remove((gpio_num_t)_pinB);
     gpio_set_intr_type((gpio_num_t)_pinB, GPIO_INTR_DISABLE);
   }
-  // nevoláme gpio_uninstall_isr_service() — může to rozbít jiné handlery
 }
 
 bool Rencoder::init() {

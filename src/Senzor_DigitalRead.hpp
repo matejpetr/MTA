@@ -5,7 +5,7 @@
 
 class SensorDigitalRead : public Sensor {
 public:
-  // pin lze předat konstruktorem pro rychlé testy, ale produkčně se přiřazuje přes attach()
+  // Konstruktor, pin lze předat pro test, produkčně se bere přes attach
   SensorDigitalRead(int pin = -1, int id = 0, const char* type = "digital")
     : _pin(pin), _id(id), _type(type), _attached(pin >= 0) {
     if (_attached && _pin >= 0) pinMode(_pin, INPUT);
@@ -13,9 +13,7 @@ public:
 
   bool init() override { return true; }
   void reset() override {}
-
   std::vector<KV> update() override;
-
   const char* getType() override { return "Digital"; }
 
   // PIN se bere pouze z attach()
@@ -37,8 +35,8 @@ public:
   }
 
 private:
-  int         _pin;    // -1 = unassigned
-  int         _id;     // kompatibilita se zbytkem projektu
+  int         _pin;    
+  int         _id;    
   const char* _type;
   bool        _attached = false;
 };

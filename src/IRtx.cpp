@@ -19,12 +19,10 @@ static void ensureIrSend(int pin) {
   }
 }
 
-// ---------------- volné funkce ----------------
-
 void IRtx_config(int pin, uint32_t code) {
   ensureIrSend(pin);
   if (s_irsend) {
-    s_irsend->sendNEC(code, 32);  // jen jednou, bez repeats
+    s_irsend->sendNEC(code, 32);  
   }
 }
 

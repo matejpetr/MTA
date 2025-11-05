@@ -25,18 +25,13 @@ public:
       if (_y  >= 0) pinMode(_y, INPUT);
     }
     
-  // init: provede kalibraci středu a rychlou kontrolu vstupů
-  bool init() override;
-
-  // reset: zneplatní kalibraci – další update ji provede znovu
+ 
   void reset() override { _calibrated = false; }
-
-  // update: vrací {"direction","CENTER|CLICK|UP|DOWN|LEFT|RIGHT"}
   std::vector<KV> update() override;
-
   const char* getType() override { return "Joystick"; }
-
-  // config: Res (ADC bity), Threshold (0–100 % mrtvé zóny)
+  bool init() override { return true; }
+  
+  // konfigurační parametry
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       if      (params[i].key == "Res")       _res       = params[i].value.toInt();
@@ -46,7 +41,7 @@ public:
   }
 
 private:
-  // pomocníci
+  // helpery
   void  calibrateCenter_(int res);
   int   pctToAdcTol_(int pct) const;
 

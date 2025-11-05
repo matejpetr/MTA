@@ -3,7 +3,7 @@
 #include "Senzor_DHT11.hpp"
 
 
-// DHT11x implementation using per-instance _dht (no global 'dht' usage)
+// měření hodnot
 std::vector<KV> DHT11x::update() {
   std::vector<KV> kv;
   if (!_dht) {
@@ -24,12 +24,14 @@ std::vector<KV> DHT11x::update() {
   return kv;
 }
 
+// inicializace senzoru 
 bool DHT11x::init() {
   if (!_dht) return false;
   _dht->begin();
   return true;
 }
 
+// reset senzoru
 void DHT11x::reset() {
   if (_dht) _dht->begin();
 }

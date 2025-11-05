@@ -43,13 +43,11 @@ private:
   int  _pinA, _pinB;
   int  _lLimit, _hLimit;
   int  _dir;
-
-  // PCNT fallback (nevyužíváme, ale uchováváme pole)
   int      _unit;
   int16_t  _last;
 
   // ISR-based counting
-  volatile int64_t _ticks;     // atomický akumulátor
+  volatile int64_t _ticks;     // akumulátor
   volatile uint8_t _prevState; // poslední AB stav
   long _position;              // poslední reportovaná pozice
 

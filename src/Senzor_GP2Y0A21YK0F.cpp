@@ -1,5 +1,5 @@
 #include "Senzor_GP2Y0A21YK0F.hpp"
-#include <GP2Y0A21YK0F.h>   // DMSU
+#include <GP2Y0A21YK0F.h> 
 
 // Pomocná: saturace do <min,max>
 static inline float clampf(float v, float lo, float hi) {
@@ -23,7 +23,7 @@ std::vector<KV> GP2Y0A21YK0F::update() {
   // 0 = cm, 1 = mm (zachováváme původní chování)
   float distance = sharp.read(_unit);
 
-  // Ořez extrémů jako dřív: <20 → 19, >80 → 81 (v dané jednotce!)
+  // Ořez extrémů <20 → 19, >80 → 81 (v dané jednotce!)
   if (_unit == 0) {
     // cm
     distance = clampf(distance, 19.0f, 81.0f);
@@ -36,7 +36,7 @@ std::vector<KV> GP2Y0A21YK0F::update() {
   if (distance < _lAlarm)      alarm = "LOW";
   else if (distance > _hAlarm) alarm = "HIGH";
 
-  kv.push_back({"distance", String(distance, 1)});  // 1 desetinné místo jako dřív
+  kv.push_back({"distance", String(distance, 1)}); 
   kv.push_back({"alarm",    alarm});
   return kv;
 }

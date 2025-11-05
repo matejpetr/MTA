@@ -1,6 +1,7 @@
 #include "Senzor_HallLin.hpp"
 #include <math.h>
 
+// inicializace senzoru
 bool HallLin::init() {
   int raw1 = analogRead(_pin);
   delay(10);
@@ -13,6 +14,7 @@ bool HallLin::init() {
   return (voltage1 >= 0.9f && voltage1 <= 2.0f) && (diff < 0.3f);
 }
 
+// měření hodnot
 std::vector<KV> HallLin::update() {
   std::vector<KV> kv;
 
@@ -31,13 +33,12 @@ std::vector<KV> HallLin::update() {
     const float voltage = (static_cast<float>(raw) / static_cast<float>(maxADC)) * Vref;
 
     if (_unit == "Induction") {
-      // 2.5 mV/G, zero na Vref/2 => výstup v mT (G * 0.1)
       const float zeroOffset  = Vref / 2.0f;   // ~1.65 V
       const float sensitivity = 0.0025f;       // V/G
       result = ((voltage - zeroOffset) / sensitivity) * 0.1f;  // mT
       key = "Induction";
+      
     } else {
-      // default "Voltage"
       result = voltage;
       key = "Voltage";
     }

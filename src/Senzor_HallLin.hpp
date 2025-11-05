@@ -6,24 +6,44 @@
 
 class HallLin : public Sensor {
 public:
-  explicit HallLin(int pin)
+  // konstruktor, pin se bere pouze z attach
+  explicit HallLin(int pin = -1)
     : _pin(pin), _res(12), _unit("Voltage") {
       analogReadResolution(_res);
     }
 
-  // stejné API
   std::vector<KV> update() override;
-  void            reset() override { /* no-op */ }
-  bool            init()  override;                 // validace jako dřív
+  void            reset() override {}
+  bool            init()  override;                 
   const char*     getType() override { return "HallLin"; }
 
-  // config jen nastaví členy (bez HW volání)
+  // konfigurační parametry
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       if      (params[i].key == "Res")  _res  = params[i].value.toInt();
       else if (params[i].key == "Unit") _unit = params[i].value;
     }
     analogReadResolution(_res);
+    if (_pin >= 0) pinMode(_pin, INPUT);
+  }
+
+  // přiřazení pinu přes attach, použije první pin
+  void attach(const std::vector<int>& pins) override {
+    if (!pins.empty()) {
+      _pin = pins[0];
+      if (_pin >= 0) {
+        pinMode(_pin, INPUT);
+        analogReadResolution(_res);
+      }
+    }
+  }
+
+  // uvolnění pinu
+  void detach() override {
+    if (_pin >= 0) {
+      pinMode(_pin, INPUT);
+      _pin = -1;
+    }
   }
 
 private:

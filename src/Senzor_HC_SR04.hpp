@@ -19,12 +19,12 @@ public:
       if (_echo >= 0) pinMode(_echo, INPUT);
     }
 
-  bool            init()   override;                 // rychlý sanity check
-  void            reset()  override { /* no-op */ }
-  std::vector<KV> update() override;                 // {"distance", ...}
+  bool            init()   override;                 
+  void            reset()  override {}
+  std::vector<KV> update() override;                
   const char*     getType() override { return "HCSR04"; }
 
-  // Config v HPP: jen uloží členy (bez HW volání)
+  // Konfigurační parametry
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       if      (params[i].key == "Limit") _limit   = params[i].value.toInt(); // max cm

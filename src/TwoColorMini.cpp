@@ -2,11 +2,10 @@
 #include "TwoColorMini.hpp"
 #include <Arduino.h>
 
-// držíme poslední použité piny pro reset(); hlídáme -1
 static int s_pinR = -1;
 static int s_pinG = -1;
 
-// mapujeme 0..100 -> 0..255 (když pošleš mimo rozsah, ořežeme)
+// mapování 0-100 na 0-255 PWM + ořez
 static inline int clamp100(int v) { return v < 0 ? 0 : (v > 100 ? 100 : v); }
 
 static inline int mapToPWM(int brig01_100) {
@@ -20,12 +19,10 @@ void TwoColorMini_setPins(int pinRed, int pinGreen) {
 }
 
 void TwoColorMini_config(char color, int Brightness) {
-  // pokud žádný pin není nastaven, nic neděláme
-  if (s_pinR < 0 && s_pinG < 0) return;
 
+  if (s_pinR < 0 && s_pinG < 0) return;
   if (s_pinR >= 0) pinMode(s_pinR, OUTPUT);
   if (s_pinG >= 0) pinMode(s_pinG, OUTPUT);
-
   const int pwmValue = mapToPWM(Brightness);
 
   // zhasni obě větve, ale pouze pokud pin existuje
@@ -40,7 +37,6 @@ void TwoColorMini_config(char color, int Brightness) {
     if (s_pinG >= 0) analogWrite(s_pinG, pwmValue);
     if (s_pinR >= 0) analogWrite(s_pinR, 0);
   } else {
-    // neznámá barva -> nech zhasnuto
   }
 }
 

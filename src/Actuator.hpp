@@ -11,7 +11,7 @@ class Actuator {
     virtual void init() {}
 
     virtual void attach(const std::vector<int>& pins) { (void)pins; }
-    virtual void detach() {}                        // default no-op
+    virtual void detach() {}                       
 };
 
 #endif

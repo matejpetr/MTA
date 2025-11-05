@@ -6,13 +6,14 @@
 #include <map>
 #include "Actuator.hpp"       
 
-
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <math.h>
 
 using std::vector;
 
+
+// externí proměnné
 extern Sensor* SeznamSenzoru[];
 extern int PocetSenzoru;
 extern Actuator* SeznamAktuatoru[];   
@@ -28,6 +29,8 @@ struct ParsedId {
   int  index;   // >=0 konkrétní prvek; -1 = wildcard '*'
 };
 
+
+// Parsuje jednotné ID ve formátu Sxx, Axx, číslo nebo wildcard a vrací rozložené pole
 static ParsedId parseUnifiedId(const String& raw, char defaultGroup = 'S') {
   ParsedId out{ defaultGroup, -2 };
   if (!raw.length()) return out;
@@ -46,7 +49,8 @@ static ParsedId parseUnifiedId(const String& raw, char defaultGroup = 'S') {
   return out;
 }
 
-// --- DS18B20 (nastavíme pin přes CONNECT a hlídáme alarmy přes CONFIG) ---
+
+// Inicializuje DS18B20 sběrnici na daném pinu a vytvoří OneWire a DallasTemperature instance
 static int ds_pin = -1;
 static OneWire* ds_ow = nullptr;
 static DallasTemperature* ds_dt = nullptr;
@@ -64,7 +68,8 @@ static void ds_setup(int pin) {
   ds_dt->setResolution(12);
 }
 
-// --- helpers ---
+
+// Vrátí první řádek stringu včetně ošetření CR a LF
 static String firstLine(const String& s) {
   int r = s.indexOf('\r');
   int n = s.indexOf('\n');
@@ -73,6 +78,8 @@ static String firstLine(const String& s) {
   return (cut < 0) ? s : s.substring(0, cut);
 }
 
+
+// Parsuje query string do mapy klíč→hodnota
 static std::map<String,String> parseQuery(const String& q) {
   std::map<String,String> kv;
   int i = (q.length() && q[0]=='?') ? 1 : 0;
@@ -89,9 +96,10 @@ static std::map<String,String> parseQuery(const String& q) {
   return kv;
 }
 
-
 static vector<uint8_t> g_inited;
 
+
+// Zavolá init pro senzor pokud ještě není inicializovaný a nasbírá hodnoty přes update
 static std::vector<KV> collectFromSensor(int idx) {
   if (idx < 0) return {};
   if ((int)g_inited.size() <= idx) g_inited.resize(idx+1, 0);
@@ -103,6 +111,8 @@ static std::vector<KV> collectFromSensor(int idx) {
   return kv; 
 }
 
+
+// Vrátí index senzoru z ID ve formátu Sxx nebo -1 pokud nevalidní
 static int idToIndex_Sxx(const String& id) {
   if (id.length() != 3) return -1;
   if (id.charAt(0) != 'S') return -1;
@@ -111,6 +121,7 @@ static int idToIndex_Sxx(const String& id) {
 }
 
 
+// Registruje všechny senzory do VSCP zařízení s onUpdate handlery
 extern "C" void VSCP_SetupRegisterAll() {
   g_inited.assign(PocetSenzoru, 0);
   for (int i = 0; i < PocetSenzoru; ++i) {
@@ -123,7 +134,7 @@ extern "C" void VSCP_SetupRegisterAll() {
     });
   }
 
-  // DS18B20: override pro id="0" – čteme ds_dt (pin z CONNECT) + alarmy
+  
   // DS18B20: override už jen pro "S00"
   vscp.onUpdate(String("S00"), [](const String& /*id*/, int /*pin*/)->std::vector<KV> {
     std::vector<KV> out;
@@ -143,11 +154,14 @@ extern "C" void VSCP_SetupRegisterAll() {
   });
 }
 
+
+// Poll funkce volaná periodicky z hlavního loopu
 extern "C" void VSCP_Poll() {
   vscp.poll();
 }
 
-// CONNECT hook (init senzoru + DS bus)
+
+// CONNECT hook pro připojení senzorů a aktuátorů, zavolá attach a init pro příslušné instance
 void VSCP_OnConnect(const String& id, const std::vector<int>& pins) {
   ParsedId pid = parseUnifiedId(id, 'S');
 
@@ -156,18 +170,18 @@ void VSCP_OnConnect(const String& id, const std::vector<int>& pins) {
     if (idx >= 0 && idx < PocetSenzoru) {
       if ((int)g_attachedS.size() <= idx) g_attachedS.resize(idx+1, 0);
 
-      // když už něco bylo připojeno, nejdřív uvolni staré piny
+      // Uvolnění připojených pinů
       if (g_attachedS[idx]) SeznamSenzoru[idx]->detach();
 
-      // 1) přivážeme nové piny
+      // Připojení nových pinů
       SeznamSenzoru[idx]->attach(pins);
 
-      // 2) až teď inicializace HW (idempotentně)
+      // Inicializace po attach
       SeznamSenzoru[idx]->init();
 
       g_attachedS[idx] = 1;
 
-      // speciál pro DS18B20 (pokud používáš S00) – využij první pin
+      // speciál pro DS18B20
       if (pid.index == 0 && !pins.empty() && pins[0] >= 0) {
         ds_setup(pins[0]);
       }
@@ -190,13 +204,16 @@ void VSCP_OnConnect(const String& id, const std::vector<int>& pins) {
   }
 }
 
+
+// Overload CONNECT s jedním pinem, převede na vector a zavolá hlavní hook
 extern "C" void VSCP_OnConnect(const String& id, int pin) {
   std::vector<int> v; 
   if (pin >= 0) v.push_back(pin);
   VSCP_OnConnect(id, v);
 }
 
-// NOVÉ: DISCONNECT → jen zavoláme detach, ať se HW uvolní
+
+// DISCONNECT hook pro uvolnění HW a reset interních stavů
 void VSCP_OnDisconnect(const String& id) {
   ParsedId pid = parseUnifiedId(id, 'S');
   if (pid.group == 'S') {
@@ -214,8 +231,8 @@ void VSCP_OnDisconnect(const String& id) {
   }
 }
 
-// CONFIG hook — převede parametry na Param{key,value} a zavolá sensor->config,
-// zároveň obslouží DS18B20 alarm limity (LowAlarm/HighAlarm). Vrací true pokud něco použil.
+
+// CONFIG hook pro předání parametrů senzorům a aktuátorům, včetně DS18B20 alarmů
 bool VSCP_OnConfig(const String& id, const std::map<String,String>& params) {
   bool used = false;
 
@@ -223,7 +240,7 @@ bool VSCP_OnConfig(const String& id, const std::map<String,String>& params) {
 
   // ==== speciály + obecné předání senzorům ====
   if (pid.group == 'S') {
-    // (Tvoje dosavadní DS18B20 LowAlarm/HighAlarm pro S00...)
+    // speciál pro DS18B20 alarmy
     if (pid.index == 0) {
       auto itL = params.find("LowAlarm");
       if (itL != params.end()) { ds_low_alarm = String(itL->second.c_str()).toFloat(); used = true; }
@@ -250,7 +267,6 @@ bool VSCP_OnConfig(const String& id, const std::map<String,String>& params) {
 
   // ==== aktuátory ====
   if (pid.group == 'A') {
-    // wildcard A* dává smysl pro hromadné resetování / hromadné nastavení
     auto itReset = params.find("reset");
     bool doReset = (itReset != params.end()) &&
                    (itReset->second == "1" || itReset->second == "true");

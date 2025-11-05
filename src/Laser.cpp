@@ -1,7 +1,7 @@
 #include "Laser.hpp"
 #include <Arduino.h>
 
-// interní pin spravovaný funkcí setPin()
+
 static int s_pin = -1;
 
 void Laser_setPin(int pin) {

@@ -1,12 +1,15 @@
 #include "Senzor_HC_SR04.hpp"
 #include <NewPing.h>
 
+//inicializace senzoru
 bool HCSR04::init() {
   NewPing sonar(_trig, _echo, _limit);
   int dist = sonar.ping_cm();
   return (dist > 2);                // stejné chování jako dřív
 }
 
+
+//měření hodnot 
 std::vector<KV> HCSR04::update() {
   std::vector<KV> kv;
 

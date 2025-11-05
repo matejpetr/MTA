@@ -3,12 +3,13 @@
 #include <vector>
 #include <Arduino.h>
 
+// Struktura pro parametry klíč-hodnota
 struct Param {
   String key;
   String value;
 };
-
 struct KV { String k; String v; };
+
 
 //Třída Sensor
 class Sensor {
@@ -16,7 +17,7 @@ class Sensor {
     virtual std::vector<KV>  update() = 0;
     virtual void reset() {}
     virtual bool init()=0; 
-    virtual void config(Param* params, int paramCount) {}  // prázdná výchozí implementace
+    virtual void config(Param* params, int paramCount) {}
     virtual ~Sensor() {}
     virtual const char* getType() = 0;
     virtual void attach(const std::vector<int>& pins) { (void)pins; }

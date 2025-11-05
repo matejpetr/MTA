@@ -12,7 +12,6 @@ public:
     : _pinR(pinR), _pinG(pinG), _pinB(pinB),
       _BrigR(BrigR), _BrigG(BrigG), _BrigB(BrigB) {}
 
-  // pins are taken only from attach()
   void attach(const std::vector<int>& pins) override {
     if (pins.size() >= 1) _pinR = pins[0];
     if (pins.size() >= 2) _pinG = pins[1];
@@ -21,7 +20,6 @@ public:
   }
 
   void detach() override {
-    // safe shutdown and release pins
     RGB_reset();
     if (_pinR >= 0) { digitalWrite(_pinR, LOW); pinMode(_pinR, INPUT); _pinR = -1; }
     if (_pinG >= 0) { digitalWrite(_pinG, LOW); pinMode(_pinG, INPUT); _pinG = -1; }
@@ -29,7 +27,7 @@ public:
     RGB_setPins(-1, -1, -1);
   }
 
-  // config only adjusts brightness values (angle/speed style kept minimal)
+  // konfigurační parametry 
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       if (params[i].key == "BrigR") _BrigR = params[i].value.toInt();

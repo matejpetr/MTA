@@ -13,7 +13,6 @@ public:
 
   void attach(const std::vector<int>& pins) override {
   if (!pins.empty()) {
-    // bezpečně ukonči případný běh na starém pinu
     if (_pin >= 0 && _pin != pins[0]) noTone(_pin);
     _pin = pins[0];
     }

@@ -1,6 +1,6 @@
 #include "Senzor_TCS34725.hpp"
 
-// Pokud je nemáš globálně jinde, můžou být definované zde:
+// Jediná instance I2C a TCS34725 pro tento senzor
 TwoWire I2C(0);
 Adafruit_TCS34725 tcs(TCS34725_INTEGRATIONTIME_614MS, TCS34725_GAIN_4X);
 
@@ -37,8 +37,8 @@ bool TCS34725::init() {
   tcs.enable();
 
   _tcsEnabled = true;
-  _readyAtMs  = millis() + _itime + 5;  // _itime máš v ms
-  _blockFirst = true;                   // <<< první UPDATE počká
+  _readyAtMs  = millis() + _itime + 5;  // ms
+  _blockFirst = true;                   // blokace prvního UPDATE po init
 
   return true;
 }
@@ -58,38 +58,37 @@ void TCS34725::applyConfig_() {
 std::vector<KV> TCS34725::update() {
   std::vector<KV> kv;
 
-  // ID check – akceptuj 0x44 i 0x4D
+  // ID check – accept pro 0x44 i 0x4D
   uint8_t id = tcs.read8(TCS34725_ID);
   if (id != 0x44 && id != 0x4D) {
-    if (!init()) return kv;            // no content
-    // _blockFirst = true už je nastaven v init()
-    return kv;                         // první volání po re-init = 204 (nebo si níže zablokuje)
+    if (!init()) return kv;            
+    return kv;                         
   }
 
   // Warm-up: ještě neuplynula integrační doba?
   long msLeft = (long)(_readyAtMs - millis());
   if (!_tcsEnabled || msLeft > 0) {
     if (_blockFirst) {
-      // poprvé po CONNECT/RESET čekáme a hned vrátíme data
+      // poprvé po CONNECT/RESET se čeká, další volání vrací data
       if (msLeft > 0) delay(msLeft);
       _blockFirst = false;
     } else {
-      return kv;   // další volání před _readyAtMs → 204
+      return kv;   
     }
   }
 
   uint16_t r,g,b,c;
   tcs.getRawData(&r,&g,&b,&c);
 
-  // Auto-recover: pokud by i tak byly samé nuly (typicky hned po power-cycle modulu)
+  // Auto-recover
   if (r==0 && g==0 && b==0 && c==0) {
     tcs.disable(); tcs.enable();
     _readyAtMs  = millis() + _itime + 5;
-    _blockFirst = true;                // při re-enable zase blokuj první
-    return kv;                         // 204 jen jednou
+    _blockFirst = true;                // při re-enable zase blokuje první
+    return kv;                         
   }
 
-  // … tvoje normalizace a push_back(R/G/B) …
+  // normalizace a korekce barev (klidně upravit dle referenčních hodnot)
   if (c == 0) c = 1;
   float rn = (float)r / (c + 1);
   float gn = (float)g / (c + 1);

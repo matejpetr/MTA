@@ -1,15 +1,13 @@
 #include "Stepper.hpp"
 #include <CheapStepper.h>
 
-// vyhnout se 6..11 (flash), 34..39 (input-only), 12 (strap)
+// Validace pinů
 static inline bool validOutPin_(int p) {
   if (p < 0) return false;
-  if (p >= 6 && p <= 11) return false;
-  if (p == 12) return false;
-  if (p >= 34 && p <= 39) return false;
-  return (p <= 33);
+  return true;
 }
 
+// Uvolni piny
 void Stepper::releasePins_() {
   if (_pin1 >= 0) pinMode(_pin1, INPUT);
   if (_pin2 >= 0) pinMode(_pin2, INPUT);
@@ -17,12 +15,12 @@ void Stepper::releasePins_() {
   if (_pin4 >= 0) pinMode(_pin4, INPUT);
 }
 
-
+// Nastavení driveru pokud jsou správné piny
 void Stepper::ensureDriver_() {
   if (_stp) return;
   if (!validOutPin_(_pin1) || !validOutPin_(_pin2) ||
       !validOutPin_(_pin3) || !validOutPin_(_pin4)) {
-    return; // nemáme validní piny → neinstancuj driver
+    return; 
   }
 
   pinMode(_pin1, OUTPUT);
@@ -32,9 +30,10 @@ void Stepper::ensureDriver_() {
 
   _stp = new CheapStepper(_pin1, _pin2, _pin3, _pin4);
   _stp->setRpm(_rpm);
-  _stp->stop(); // drž cívky vypnuté, dokud nepřijde příkaz
+  _stp->stop(); // drží cívky vypnuté, dokud nepřijde příkaz
 }
 
+// připojení – nastav piny a vytvoř driver
 void Stepper::attach(const std::vector<int>& pins) {
   // vypnout a uvolnit starý driver
   if (_stp) { _stp->stop(); delete _stp; _stp = nullptr; }
@@ -47,6 +46,7 @@ void Stepper::attach(const std::vector<int>& pins) {
   ensureDriver_();
 }
 
+// odpojení – vypnout a uvolnit piny
 void Stepper::detach() {
   _stp->stop();
   if (_stp) { delete _stp; _stp = nullptr; }
@@ -59,7 +59,6 @@ void Stepper::init() {
 }
 
 void Stepper::config(Param* params, int count) {
-  // Piny v CONFIGU NEMĚNÍME – jen logické parametry
   for (int i = 0; i < count; ++i) {
     if      (params[i].key == "angle") _angle = params[i].value.toInt();
     else if (params[i].key == "dir")   _dir   = (params[i].value == "true");

@@ -7,20 +7,6 @@ extern "C" void VSCP_SetupRegisterAll();
 extern "C" void VSCP_Poll();
 
 
-
-/*
- * Parsuje sjednocené ID.
- * Povoleno:
- *  - "Sxx" pro senzory (např. S00, S09, S12)
- *  - "Axx" pro aktuátory (např. A00, A05)
- *  - "S*"  nebo "A*" pro zásah do všech prvků dané skupiny
- *
- * Výstupy:
- *  - prefix: 'S' nebo 'A'
- *  - index:  >=0 pro konkrétní prvek, -1 pokud jde o "všechny" 
-*/
-
-
 // --- Globální seznamy ---
 Sensor* SeznamSenzoru[] = {
   new DS18B20(&sensors),                      // 0
@@ -80,12 +66,12 @@ Actuator* SeznamAktuatoru[] = {
 int PocetAktuatoru = sizeof(SeznamAktuatoru) / sizeof(SeznamAktuatoru[0]);
 
 
-
+// Setup funkce - start seriové linky 
 void setup()
 {
   #if USE_HW_UART  //HW serial
   VSCP_STREAM.begin(VSCP_BAUD, SERIAL_8N1, VSCP_RX_PIN, VSCP_TX_PIN);
-  //Serial.begin(115200);
+ 
   delay(200);
   VSCP_STREAM.println("DBG: VSCP po Serial1");
 #else // USB Serial
@@ -95,12 +81,12 @@ void setup()
   VSCP_STREAM.println("DBG: VSCP po USB Serial");
 #endif
 
-  //VSCP_STREAM.println("fungujeme ?");
   VSCP_SetupRegisterAll();
   VSCP_STREAM.setTimeout(0);
 }
 
 
+// Loop smyčka
 void loop() {
   VSCP_Poll();
 }

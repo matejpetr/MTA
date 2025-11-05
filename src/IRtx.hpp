@@ -25,9 +25,29 @@ public:
     IRtx_reset(_pin);
   }
 
+  // přiřazení pinu přes attach, použije první pin a inicializuje TX
+  void attach(const std::vector<int>& pins) override {
+    if (!pins.empty()) {
+      _pin = pins[0];
+      if (_pin >= 0) {
+        pinMode(_pin, OUTPUT);
+        IRtx_config(_pin, _code);
+      }
+    }
+  }
+
+  // uvolnění pinu a vypnutí TX
+  void detach() override {
+    if (_pin >= 0) {
+      IRtx_reset(_pin);
+      pinMode(_pin, INPUT);
+      _pin = -1;
+    }
+  }
+
 private:
   int _pin;
-  uint32_t _code;
+  uint32_t _code=0x00000000;  //initial value
 
   static uint32_t parseHex32(String s) {
     s.trim();

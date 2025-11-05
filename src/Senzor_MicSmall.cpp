@@ -1,12 +1,17 @@
 #include "Senzor_MicSmall.hpp"
 #include <math.h>
 
+// referenční hladina
+static float REF_BASE = 0.0f;
+
 bool MicSmall::init() {
-  // původní MicSmall_init: malý klidový rozptyl
+  // výpočet několika vzorků pro referenční hladinu
   const int samples = 10;
+  analogReadResolution(_res);
+
+  long sum = 0;
   int minVal = (1 << _res) - 1;
   int maxVal = 0;
-  long sum = 0;
 
   for (int i = 0; i < samples; ++i) {
     int val = analogRead(_pin);
@@ -16,8 +21,10 @@ bool MicSmall::init() {
     delay(5);
   }
 
-  const int diff = maxVal - minVal;
-  return (diff < 10);
+  // průměr jako referenční hladina
+  REF_BASE = (float)sum / (float)samples;
+  if (!REF_BASE <= 0.0f) return false;
+  return true;
 }
 
 std::vector<KV> MicSmall::update() {

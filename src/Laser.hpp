@@ -11,6 +11,8 @@ public:
   Laser(int pin = -1, bool control = false)
     : _pin(pin), _control(control) {}
 
+
+  //Přiřazení pinu 
   void attach(const std::vector<int>& pins) override {
     if (pins.size() >= 1) {
       _pin = pins[0];
@@ -18,8 +20,8 @@ public:
     }
   }
 
+  // bezpečně vypnout a uvolnit pin
   void detach() override {
-    // bezpečně vypnout a uvolnit pin
     Laser_reset();
     if (_pin >= 0) {
       digitalWrite(_pin, LOW);
@@ -33,7 +35,6 @@ public:
     for (int i = 0; i < count; ++i) {
       if (params[i].key == "control") _control = params[i].value == "true";
     }
-    // používá pin nastavený v attach()
     Laser_config(_control);
   }
 

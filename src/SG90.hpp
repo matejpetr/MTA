@@ -3,22 +3,22 @@
 #include <ESP32Servo.h>
 #include "Actuator.hpp"
 
-// Volné funkce pro kompatibilitu
-void SG90_setPin(int pin);            // pin nastaví attach()
-void SG90_config(int angle, int speed); // konfigurace bez parametru pinu
+
+void SG90_setPin(int pin);           
+void SG90_config(int angle, int speed); 
 
 class SG90 : public Actuator {
 public:
   SG90(int pin, int angle, int speed)
     : _pin(pin), _angle(angle), _speed(speed) {}
 
-  // Přijímá params z CONFIG (piny řeší CONNECT -> attach)
+  
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       if (params[i].key == "angle") _angle = params[i].value.toInt();
       else if (params[i].key == "speed") _speed = params[i].value.toInt();
     }
-    // Aplikuj na členské servo
+  
     apply_();
   }
 
@@ -27,16 +27,15 @@ public:
     if (_pin < 0) return;
     if (_servo.attached()) _servo.detach();
     _servo.attach(_pin);
-    // srovnáme do neutrálu rychle (bez zdržení)
     writeSmooth_(0, 0);
     _lastAngle = 0;
-    SG90_setPin(_pin); // zajisti konzistenci volné funkce
+    SG90_setPin(_pin); 
   }
 
-  // Reset = znovu-inicializace (ne deklarace!)
+  // Reset = reinicializace
   void reset() override { init(); }
 
-  // CONNECT -> dynamické přepojení pinu
+  
   void attach(const std::vector<int>& pins) override {
     if (!pins.empty()) {
       int newPin = pins[0];
@@ -45,7 +44,7 @@ public:
         if (_pin >= 0) pinMode(_pin, INPUT);
         _pin = newPin;
         _servo.attach(_pin);
-        SG90_setPin(_pin); // pin pro volnou funkci je brán pouze z attach()
+        SG90_setPin(_pin); 
       }
     }
   }
@@ -54,14 +53,14 @@ public:
   void detach() override {
     if (_servo.attached()) _servo.detach();
     if (_pin >= 0) pinMode(_pin, INPUT);
-    SG90_setPin(-1); // uvolnit interní pin
+    SG90_setPin(-1);
   }
 
 private:
   // Převod speed(0..100) -> delay mezi kroky (ms), 0 = nejrychleji
   static int speedToDelayMs_(int speed) {
     speed = constrain(speed, 0, 100);
-    // tvoje původní map: (0 → 100 ms) vs (100 → 0 ms)
+   
     return map(speed, 0, 100, 100, 0);
   }
 
@@ -89,7 +88,7 @@ private:
     }
   }
 
-  Servo _servo;      // ČLEN třídy (žádný globál)
+  Servo _servo;      
   int   _pin   = -1;
   int   _angle = 0;   // 0..180
   int   _speed = 0;   // 0..100

@@ -2,8 +2,8 @@
 #include <math.h>
 
 bool PHresistance::init() {
-  // původní kontrola: stačí aby surová hodnota byla > 1000
-  return analogRead(_pin) > 1000;
+  // raw check, stačí aby value nebyla 0
+  return analogRead(_pin) > 100;
 }
 
 std::vector<KV> PHresistance::update() {
@@ -16,7 +16,7 @@ std::vector<KV> PHresistance::update() {
   const float maxAdc = (float)((1UL << _res) - 1UL);
   const float voltage = (maxAdc > 0.0f) ? (raw / maxAdc) * Vref : 0.0f;
 
-  // ochrana proti dělení nulou (při napětí těsně u Vref)
+  // ochrana proti dělení nulou
   float R = 0.0f;
   if (voltage >= Vref - 1e-6f) {
     R = 1e6f; // velké číslo => velmi nízké světlo (R -> vysoké)
@@ -26,7 +26,7 @@ std::vector<KV> PHresistance::update() {
     R = (voltage * Rfixed) / (Vref - voltage);
   }
 
-  // lux aproximace z původního kódu + gain
+  // lux aproximace + gain
   float lux = _gain * (455.0f * powf(Rfixed / R, 0.68f));
   if (!isfinite(lux)) lux = 0.0f;
   if (lux < 0.0f)     lux = 0.0f;

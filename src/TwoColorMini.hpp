@@ -15,12 +15,10 @@ public:
   void attach(const std::vector<int>& pins) override {
     if (pins.size() >= 1) _pinRed   = pins[0];
     if (pins.size() >= 2) _pinGreen = pins[1];
-    // nastavit globální driver piny — config už pak použije tyto piny
     TwoColorMini_setPins(_pinRed, _pinGreen);
   }
 
   void detach() override {
-    // bezpečně vypnout a uvolnit piny pokud jsou validní
     TwoColorMini_reset();
     if (_pinRed >= 0) { digitalWrite(_pinRed, LOW); pinMode(_pinRed, INPUT); _pinRed = -1; }
     if (_pinGreen >= 0) { digitalWrite(_pinGreen, LOW); pinMode(_pinGreen, INPUT); _pinGreen = -1; }

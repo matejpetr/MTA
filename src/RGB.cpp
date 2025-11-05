@@ -1,6 +1,6 @@
 #include "RGB.hpp"
 
-// internal pins managed via RGB_setPins (attach will call it)
+
 static int s_pinR = -1;
 static int s_pinG = -1;
 static int s_pinB = -1;
@@ -17,7 +17,6 @@ void RGB_setPins(int pinR, int pinG, int pinB) {
 static inline int clamp100(int v) { return v < 0 ? 0 : (v > 100 ? 100 : v); }
 
 void RGB_config(int BrigR, int BrigG, int BrigB) {
-  // do nothing if no pins set
   if (s_pinR < 0 && s_pinG < 0 && s_pinB < 0) return;
 
   BrigR = clamp100(BrigR);
@@ -28,7 +27,7 @@ void RGB_config(int BrigR, int BrigG, int BrigB) {
   int pwmG = map(BrigG, 0, 100, 0, 255);
   int pwmB = map(BrigB, 0, 100, 0, 255);
 
-  // aggregate by physical pin (write each pin only once, use max of channels)
+  // agregace podle fyzického pinu (každý pin se zapisuje pouze jednou, používá se max kanálů)
   int pins[3] = { s_pinR, s_pinG, s_pinB };
   int pwms[3] = { pwmR, pwmG, pwmB };
 

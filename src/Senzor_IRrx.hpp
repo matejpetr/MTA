@@ -4,7 +4,6 @@
 #include "Sensor.hpp"
 
 
-// >>> Přidej forward deklarace GLOBÁLNĚ (mimo class IRrx)
 class IRrecv;
 struct decode_results;
 
@@ -25,8 +24,23 @@ public:
     }
   }
 
+  // přiřazení pinu přes attach, použije první pin
+  void attach(const std::vector<int>& pins) override {
+    if (!pins.empty()) {
+      _pin = pins[0];
+      if (_pin >= 0) {
+        pinMode(_pin, INPUT);
+        ensureIrRecv_();
+        startTaskIfNeeded_();
+      }
+    }
+  }
+
+  // uvolnění pinu a zdrojů
+  void detach() override;
+
 private:
-  // helpery zůstávají stejné…
+  // helpery
   void ensureIrRecv_();
   void startTaskIfNeeded_();
   static void taskEntry_(void* pv);
@@ -36,9 +50,9 @@ private:
   int            _pin;
   unsigned long  _dedupMs;
 
-  // >>> Použij globální typy, NE vnořené
+  
   IRrecv*         _irrecv = nullptr;          // z IRremoteESP8266
-  void*           _task   = nullptr;          // TaskHandle_t, necháme jako void*
+  void*           _task   = nullptr;          // TaskHandle_t jako void*
   decode_results* _res    = nullptr;          // z IRremoteESP8266
 
   // sdílená data
