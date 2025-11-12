@@ -9,7 +9,6 @@ Univerzální firmware pro čtení dat ze senzorů a ovládání aktuátorů na 
 [![PlatformIO](https://img.shields.io/badge/PlatformIO-ESP32-orange)](https://platformio.org/) 
 [![Board](https://img.shields.io/badge/Board-ESP32--S3--DevKitC--1-blue)](#požadavky) 
 [![Framework](https://img.shields.io/badge/Framework-Arduino-green)](https://docs.platformio.org/en/latest/frameworks/arduino.html)
-[![License](https://img.shields.io/badge/License-MIT-lightgrey)](#licence)
 
 ---
 
@@ -25,7 +24,7 @@ Univerzální firmware pro čtení dat ze senzorů a ovládání aktuátorů na 
 ## 🧩 Podporované senzory (výběr)
 - **Teplota / vlhkost / tlak**: `DHT11`, `BMP180`, `BMP280`, `DS18B20`
 - **Analogové senzory**: `NTC` (Senzor_Antc), mikrofony (`MicSmall`, `MicBig`), `PH resistance`
-- **Digitální senzory**: `Hall`, `HallLin`, `Heartbeat`, `DigitalRead`
+- **Digitální senzory**: `Prakticky veškeré digitální senzory pracující na 3v3/5v`
 - **Vzdálenost / barva**: `HC_SR04`, `GP2Y0A21YK0F`, `TCS34725`
 - **IR**: příjem (`IRrx`) a vysílání (`IRtx`)
 - **Vstupy**: joystick (VRx/VRy/SW), enkodér
@@ -44,14 +43,12 @@ Univerzální firmware pro čtení dat ze senzorů a ovládání aktuátorů na 
 
 ---
 
-## 🔌 Zapojení (výchozí piny)
-Základní mapování pinů (viz `src/GVL.hpp`):
-- **Jednovodičová sběrnice (OneWire)**: `term1`
-- **Analogové vstupy**: `term1`–`term4`
-- **Joystick**: `VRx`, `VRy`, `SW`
-- **I²C (3V3)**: `SDA` = `xSDA`, `SCL` = `xSCL`
+## 🔌 Nastavení pinů
+Nastavení pinů probíhá v připojeném GUI (ESP displej/ Windows aplikace) 
+- **Příkaz pro připojení**: `Connect`
+- **Příkaz pro odpojení**: `Disconnect`
 
-> Při potřebě změny uprav hodnoty v `GVL.hpp`.
+> **Detailní informace v dokumentaci**
 
 ---
 
