@@ -22,8 +22,11 @@ public:
   // Konfigurační parametry
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if      (params[i].key == "Res") _res  = params[i].value.toInt();
-      else if (params[i].key == "MT")  _time = params[i].value.toInt();   // ms
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if      (k == "res") _res  = params[i].value.toInt();
+      else if (k == "time")  _time = params[i].value.toInt();   // ms
     }
     analogReadResolution(_res);
   }

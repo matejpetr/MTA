@@ -26,8 +26,11 @@ public:
 
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if (params[i].key == "color") _color = params[i].value.charAt(0);
-      else if (params[i].key == "Brig") _Brightness = params[i].value.toInt();
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if (k == "color") _color = params[i].value.charAt(0);
+      else if (k == "brig") _Brightness = params[i].value.toInt();
     }
     TwoColorMini_config(_color, _Brightness);
   }

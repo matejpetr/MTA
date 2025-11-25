@@ -28,9 +28,13 @@ public:
   // Konfigurační parametry
   void config(Param* params=nullptr, int count=0) override {
     for (int i=0; i<count; ++i) {
-      if (params[i].key == "Res") _res = params[i].value.toInt();
-      else if (params[i].key == "Filter") _filter = static_cast<Filter>(params[i].value.toInt());
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if (k == "res") _res = params[i].value.toInt();
+      else if (k == "filter") _filter = static_cast<Filter>(params[i].value.toInt());
     }
+    
     // aplikace ADC rozlišení pokud je pin přiřazen
     analogReadResolution(_res);
     if (_pin >= 0) pinMode(_pin, INPUT);

@@ -60,12 +60,15 @@ void Stepper::init() {
 
 void Stepper::config(Param* params, int count) {
   for (int i = 0; i < count; ++i) {
-    if      (params[i].key == "angle") _angle = params[i].value.toInt();
-    else if (params[i].key == "dir") {
+    String k = params[i].key;
+    k.trim();
+    k.toLowerCase();
+    if      (k == "angle") _angle = params[i].value.toInt();
+    else if (k == "dir") {
        String v = params[i].value;
        _dir = (v == "true" || v == "1");
     }
-    else if (params[i].key == "rpm")   _rpm   = params[i].value.toInt();
+    else if (k == "rpm")   _rpm   = params[i].value.toInt();
   }
 
   ensureDriver_();

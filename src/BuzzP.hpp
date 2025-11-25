@@ -27,9 +27,11 @@ public:
 
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if (params[i].key == "pin") _pin = params[i].value.toInt();
-      else if (params[i].key == "freq") _freq = params[i].value.toInt();
-      else if (params[i].key == "duration") _duration = params[i].value.toInt();
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if (k == "freq") _freq = params[i].value.toInt();
+      else if (k == "duration") _duration = params[i].value.toInt();
     }
     BuzzP_config(_pin, _freq, _duration);
   }

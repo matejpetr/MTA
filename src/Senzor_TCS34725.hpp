@@ -38,8 +38,11 @@ public:
   // konfigurační parametry
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if      (params[i].key == "Itime") _itime = params[i].value.toInt();
-      else if (params[i].key == "Gain")  _gain  = params[i].value.toInt();
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if      (k == "itime") _itime = params[i].value.toInt();
+      else if (k == "gain")  _gain  = params[i].value.toInt();
     }
     applyConfig_();
   }

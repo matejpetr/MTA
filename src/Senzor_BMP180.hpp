@@ -34,7 +34,10 @@ public:
   // Konfigurační parametry (např. Gain)
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if (params[i].key == "Gain") _gain = params[i].value.toFloat();
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if (k == "gain") _gain = params[i].value.toFloat();
     }
   }
 

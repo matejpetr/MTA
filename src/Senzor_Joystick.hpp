@@ -34,8 +34,11 @@ public:
   // konfigurační parametry
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if      (params[i].key == "Res")       _res       = params[i].value.toInt();
-      else if (params[i].key == "Threshold") _threshold = params[i].value.toInt();
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if      (k == "res")       _res       = params[i].value.toInt();
+      else if (k == "threshold") _threshold = params[i].value.toInt();
     }
     analogReadResolution(_res);
   }

@@ -19,9 +19,12 @@ public:
   // Konfigurační parametry
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if      (params[i].key == "Res")     _res    = params[i].value.toInt();
-      else if (params[i].key == "LLimit")  _lLimit = params[i].value.toInt();
-      else if (params[i].key == "HLimit")  _hLimit = params[i].value.toInt();
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if      (k == "res")     _res    = params[i].value.toInt();
+      else if (k == "llimit")  _lLimit = params[i].value.toInt();
+      else if (k == "hlimit")  _hLimit = params[i].value.toInt();
     }
     // aplikace ADC rozlišení a nastavení vstupu pokud je pin přiřazen
     analogReadResolution(_res);

@@ -30,9 +30,12 @@ public:
   // konfigurační parametry 
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if (params[i].key == "BrigR") _BrigR = params[i].value.toInt();
-      else if (params[i].key == "BrigG") _BrigG = params[i].value.toInt();
-      else if (params[i].key == "BrigB") _BrigB = params[i].value.toInt();
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if (k == "brigr") _BrigR = params[i].value.toInt();
+      else if (k == "brigg") _BrigG = params[i].value.toInt();
+      else if (k == "brigb") _BrigB = params[i].value.toInt();
     }
     RGB_config(_BrigR, _BrigG, _BrigB);
   }

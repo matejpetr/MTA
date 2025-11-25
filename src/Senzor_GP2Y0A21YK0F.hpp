@@ -19,9 +19,12 @@ public:
   // Config v HPP: jen uloží parametry (0=cm, 1=mm; limity ve stejné jednotce)
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if      (params[i].key == "Unit")     _unit   = params[i].value.toInt();   // 0=cm, 1=mm
-      else if (params[i].key == "LowAlarm") _lAlarm = params[i].value.toFloat();
-      else if (params[i].key == "HighAlarm")_hAlarm = params[i].value.toFloat();
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if      (k == "unit")     _unit   = params[i].value.toInt();   // 0=cm, 1=mm
+      else if (k == "lowalarm") _lAlarm = params[i].value.toFloat();
+      else if (k == "highalarm")_hAlarm = params[i].value.toFloat();
     }
   }
   // připojení pinu přes attach()

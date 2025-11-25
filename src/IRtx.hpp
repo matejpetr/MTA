@@ -14,9 +14,10 @@ public:
 
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if (params[i].key == "code") {
-        _code = parseHex32(params[i].value);
-      }
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if (k == "code") {_code = parseHex32(params[i].value);}
     }
     IRtx_config(_pin, _code);
   }

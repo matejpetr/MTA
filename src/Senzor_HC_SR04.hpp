@@ -27,8 +27,11 @@ public:
   // Konfigurační parametry
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if      (params[i].key == "Limit") _limit   = params[i].value.toInt(); // max cm
-      else if (params[i].key == "Delay") _delayMs = params[i].value.toInt(); // ms mezi pings
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if      (k == "limit") _limit   = params[i].value.toInt(); // max cm
+      else if (k == "delay") _delayMs = params[i].value.toInt(); // ms mezi pings
     }
   }
 

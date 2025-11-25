@@ -18,7 +18,10 @@ public:
 
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if (params[i].key == "dedup") {
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if (k == "dedup") {
         _dedupMs = (unsigned long) strtoul(params[i].value.c_str(), nullptr, 10);
       }
     }

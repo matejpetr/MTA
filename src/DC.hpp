@@ -13,8 +13,16 @@ public:
 
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if (params[i].key == "Speed") _Speed = params[i].value.toInt();
-      else if (params[i].key == "state") _state = (params[i].value == "true");
+        String k = params[i].key;
+        k.trim();
+        k.toLowerCase();
+        if (k == "speed") _Speed = params[i].value.toInt();
+        else if (k == "state") {
+          String v = params[i].value;
+          v.trim();
+          v.toLowerCase();
+          _state = (v == "true" || v == "1" || v == "on");
+      }
     }
     DC_config(_pin, _Speed, _state);
   }

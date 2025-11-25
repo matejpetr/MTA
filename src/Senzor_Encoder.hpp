@@ -30,12 +30,12 @@ public:
 
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if      (params[i].key == "Direction")
-        _dir = (params[i].value == "reverse") ? -1 : 1;
-      else if (params[i].key == "LowAlarm")
-        _lLimit = params[i].value.toInt();
-      else if (params[i].key == "HighAlarm")
-        _hLimit = params[i].value.toInt();
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if      (k == "direction") _dir = (params[i].value == "reverse") ? -1 : 1;
+      else if (k == "lowalarm") _lLimit = params[i].value.toInt();
+      else if (k == "highalarm") _hLimit = params[i].value.toInt();
     }
   }
 

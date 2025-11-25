@@ -35,9 +35,12 @@ void BMP280::reset() {
 // konfugurace senzoru
 void BMP280::config(Param* params, int count) {
   for (int i = 0; i < count; ++i) {
-    if      (params[i].key == "Os_temp")  _os_temp  = params[i].value.toInt();
-    else if (params[i].key == "Os_press") _os_press = params[i].value.toInt();
-    else if (params[i].key == "Filter")   _filter   = params[i].value.toInt();
+    String k = params[i].key;
+    k.trim();
+    k.toLowerCase();
+    if      (k == "os_temp")  _os_temp  = params[i].value.toInt();
+    else if (k == "os_press") _os_press = params[i].value.toInt();
+    else if (k == "filter")   _filter   = params[i].value.toInt();
   }
 
   bmp.setSampling(

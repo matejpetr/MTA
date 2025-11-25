@@ -21,8 +21,11 @@ public:
   // Konfigurační parametry
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if      (params[i].key == "Unit") _unitF = (params[i].value == "F");
-      else if (params[i].key == "HI")   _useHI = (params[i].value == "true");
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if      (k == "unit") _unitF = (params[i].value == "F");
+      else if (k == "hi")   _useHI = (params[i].value == "true");
     }
   }
 

@@ -20,8 +20,11 @@ public:
   // konfigurační parametry
   void config(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-      if      (params[i].key == "Res")  _res  = params[i].value.toInt();
-      else if (params[i].key == "Unit") _unit = params[i].value;
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if      (k == "res")  _res  = params[i].value.toInt();
+      else if (k == "unit") _unit = params[i].value;
     }
     analogReadResolution(_res);
     if (_pin >= 0) pinMode(_pin, INPUT);
