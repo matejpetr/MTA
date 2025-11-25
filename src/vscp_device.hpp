@@ -6,6 +6,7 @@
 #include <utility>   // std::move
 #include "vscp_port.hpp"
 #include "sensor.hpp"
+#include "Actuator.hpp"
 
 // VSCP API verze
 #ifndef VSCP_API_VERSION
@@ -26,8 +27,8 @@ public:
   void poll();
 
   static void sendOK(const String& id, const std::vector<KV>& kvs = std::vector<KV>());
-  static void sendERR(const String& id, int code, const String& msg);
-
+  static void sendERR(const String& id,const String& msg);
+  //static void sendERR(const String& id, int code, const String& msg);
 private:
   String readLineNonBlocking();
   static std::map<String,String> parseQuery(const String& q);

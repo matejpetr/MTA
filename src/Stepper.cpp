@@ -61,7 +61,10 @@ void Stepper::init() {
 void Stepper::config(Param* params, int count) {
   for (int i = 0; i < count; ++i) {
     if      (params[i].key == "angle") _angle = params[i].value.toInt();
-    else if (params[i].key == "dir")   _dir   = (params[i].value == "true");
+    else if (params[i].key == "dir") {
+       String v = params[i].value;
+       _dir = (v == "true" || v == "1");
+    }
     else if (params[i].key == "rpm")   _rpm   = params[i].value.toInt();
   }
 

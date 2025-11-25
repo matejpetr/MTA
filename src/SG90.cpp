@@ -14,7 +14,7 @@ void SG90_setPin(int pin) {
 // převod rychlosti (0..100) na zpoždění mezi kroky v ms
 static inline int speedToDelayMs_(int speed) {
   speed = constrain(speed, 0, 100);
-  return map(speed, 0, 100, 100, 0);
+  return map(speed, 0, 100, 50, 0);
 }
 
 // funkce pro ovládání serva s plynulým pohybem

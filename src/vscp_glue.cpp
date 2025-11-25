@@ -238,9 +238,9 @@ bool VSCP_OnConfig(const String& id, const std::map<String,String>& params) {
 
   ParsedId pid = parseUnifiedId(id, 'S');
 
-  // ==== speciály + obecné předání senzorům ====
+  // ==== senzory ====
   if (pid.group == 'S') {
-    // speciál pro DS18B20 alarmy
+    // DS18B20 alarmy pro S00
     if (pid.index == 0) {
       auto itL = params.find("LowAlarm");
       if (itL != params.end()) { ds_low_alarm = String(itL->second.c_str()).toFloat(); used = true; }
@@ -265,32 +265,28 @@ bool VSCP_OnConfig(const String& id, const std::map<String,String>& params) {
     return used;
   }
 
-  // ==== aktuátory ====
+  // ==== aktuátory ==== 
   if (pid.group == 'A') {
-    auto itReset = params.find("reset");
-    bool doReset = (itReset != params.end()) &&
-                   (itReset->second == "1" || itReset->second == "true");
-
     auto applyOne = [&](int idx){
       if (idx < 0 || idx >= PocetAktuatoru) return false;
-      if (doReset) {
-        SeznamAktuatoru[idx]->reset();
-        return true;
-      }
       std::vector<Param> pvec;
       pvec.reserve(params.size());
       for (const auto& kv : params) {
-        if (kv.first == "type" || kv.first == "id" || kv.first == "pin" || kv.first == "api" || kv.first == "reset") continue;
+        if (kv.first == "type" || kv.first == "id" || kv.first == "pin" || kv.first == "api") continue;
         Param p; p.key = kv.first.c_str(); p.value = kv.second.c_str();
         pvec.push_back(p);
       }
-      SeznamAktuatoru[idx]->config(pvec.data(), (int)pvec.size());
-      return true;
+      if (!pvec.empty()) {
+        SeznamAktuatoru[idx]->config(pvec.data(), (int)pvec.size());
+        return true;
+      }
+      return false;
     };
 
     if (pid.index == -1) {
+      // wildcard A* — aplikuj na všechny aktuátory
       bool any = false;
-      for (int i=0; i<PocetAktuatoru; ++i) any |= applyOne(i);
+      for (int i = 0; i < PocetAktuatoru; ++i) any |= applyOne(i);
       return any;
     } else {
       return applyOne(pid.index);

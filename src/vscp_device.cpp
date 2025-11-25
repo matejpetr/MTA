@@ -1,12 +1,16 @@
 #include "vscp_device.hpp"
 #include <vector>
 #include "vscp_glue.hpp"
-#include "main.cpp"
 
-// Hooky z vscp_glue.cpp
+// Hooks defined in vscp_glue.cpp
 extern "C" void VSCP_OnConnect(const String& id, int pin);
 bool VSCP_OnConfig(const String& id, const std::map<String,String>& params);
 
+// access globals defined in main.cpp
+extern Sensor* SeznamSenzoru[];
+extern int PocetSenzoru;
+extern Actuator* SeznamAktuatoru[];
+extern int PocetAktuatoru;
 
 // Rozparsuje řetězec s piny (oddělené čárkami)
 static std::vector<int> parsePinsList(String pinsRaw) {
@@ -28,14 +32,6 @@ static std::vector<int> parsePinsList(String pinsRaw) {
   }
   return pins;
 }
-
-/*
-// Validace hodnoty pinu 
-static bool validEsp32Pin(int p) {
-  if (p < 0) return false;
-  return true;
-}
-*/
 
 // Validace formátu identifikátoru typu Sxx / Axx
 static bool validIdSAxx(const String& id) {
@@ -101,7 +97,7 @@ void VSCPDevice::sendOK(const String& id, const std::vector<KV>& kvs) {
 }
 
 // Odešle chybovou odpověď se stavovým kódem a textem chyby(volitelné-třeba sjednotit error msg)
-void VSCPDevice::sendERR(const String& id, int code, const String& msg) {
+void VSCPDevice::sendERR(const String& id,const String& msg) {
   if (id.length() > 0) {
     VSCP_STREAM.print("?id="); VSCP_STREAM.print(id);
     VSCP_STREAM.print("&status=0");
@@ -109,7 +105,6 @@ void VSCPDevice::sendERR(const String& id, int code, const String& msg) {
     VSCP_STREAM.print("?status=0");
   }
   VSCP_STREAM.print("&error="); VSCP_STREAM.print(msg);
-  VSCP_STREAM.print("&code="); VSCP_STREAM.println(code);
 }
 
 // Zpracuje příchozí požadavek (line) a odkáže na konkrétní handler
@@ -128,7 +123,7 @@ void VSCPDevice::handleRequest(const String& line) {
 
   auto itId = kv.find("id");
   String id = (itId != kv.end()) ? String(itId->second.c_str()) : String(""); 
-  sendERR(id, 400, "unknown_type");
+  sendERR(id,"Unknown type");
 }
 
 // Pollovací smyčka: čte sériovou linku non-blocking a volá handler
@@ -144,7 +139,7 @@ void VSCPDevice::handleINIT(const std::map<String,String>& kv) {
   if (itApi != kv.end()) {
     String want = itApi->second.c_str();
     if (want != String(VSCP_API_VERSION)) {
-      sendERR("", 409, String("api_mismatch_have=") + VSCP_API_VERSION + "_want=" + want);
+      sendERR("",String("Api mismatch have=") + VSCP_API_VERSION + " want=" + want);
       return;
     }
   }
@@ -159,7 +154,7 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
   auto itPin  = kv.find("pin");
 
   if (itId == kv.end() || (itPins == kv.end() && itPin == kv.end())) {
-    sendERR("", 400, "missing_id_or_pins");
+    sendERR("","Missing ID or pins");
     return;
   }
 
@@ -171,7 +166,7 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
            (s.charAt(0) == 'S' || s.charAt(0) == 'A') &&
            isDigit(s.charAt(1)) && isDigit(s.charAt(2));
   };
-  if (!validIdSAxx(id)) { sendERR(id, 422, "invalid_id_format"); return; }
+  if (!validIdSAxx(id)) { sendERR(id,"Invalid id format"); return; }
 
   // Parser pinů 
   std::vector<int> pins;
@@ -182,7 +177,7 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
     if (p >= 0) pins.push_back(p);
   }
 
-  if (pins.empty() || pins.size() > 4) { sendERR(id, 400, "invalid_pins_count"); return; }
+  if (pins.empty() || pins.size() > 4) { sendERR(id,"Invalid pins count"); return; }
 
   // validace pinů
   auto cvalidEsp32Pin = [](int p){
@@ -191,7 +186,7 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
   };
   
   for (int p : pins) {
-    if (!cvalidEsp32Pin(p)) { sendERR(id, 400, "invalid_pin"); return; }
+    if (!cvalidEsp32Pin(p)) { sendERR(id,"Invalid pin"); return; }
   }
 
   // Ulož hlavní pin (první v seznamu)
@@ -206,10 +201,10 @@ void VSCPDevice::handleCONNECT(const std::map<String,String>& kv) {
 // Zpracuje DISCONNECT: volá hook, smaže uložený pin a odpoví OK
 void VSCPDevice::handleDISCONNECT(const std::map<String,String>& kv) {
   auto itId = kv.find("id");
-  if (itId == kv.end()) { sendERR("", 400, "missing_id"); return; }
+  if (itId == kv.end()) { sendERR("","Missing ID"); return; }
   String id = itId->second.c_str();
   auto it = idToPin.find(id);
-  if (it == idToPin.end()) { sendERR(id, 404, "not_connected"); return; }
+  if (it == idToPin.end()) { sendERR(id,"Not connected"); return; }
   VSCP_OnDisconnect(id);
   idToPin.erase(it);
   sendOK(id);
@@ -218,26 +213,65 @@ void VSCPDevice::handleDISCONNECT(const std::map<String,String>& kv) {
 // Zpracuje RESET: zavolá registrovaný reset handler a resetuje zařízení
 void VSCPDevice::handleRESET(const std::map<String,String>& kv) {
   auto itId = kv.find("id");
-  if (itId == kv.end()) { sendERR("", 400, "missing_id"); return; }
+  if (itId == kv.end()) { sendERR("","Missing ID"); return; }
   String id = itId->second.c_str();
 
-  
+  // valid id forms: "Sxx", "Axx", "S*", "A*"
+  if (id.length() == 2 && id.charAt(1) == '*') {
+    char g = id.charAt(0);
+    if (g == 'S') {
+      for (int i = 0; i < PocetSenzoru; ++i) {
+        if (SeznamSenzoru[i]) SeznamSenzoru[i]->reset();
+      }
+      sendOK(id);
+      return;
+    } else if (g == 'A') {
+      for (int i = 0; i < PocetAktuatoru; ++i) {
+        if (SeznamAktuatoru[i]) SeznamAktuatoru[i]->reset();
+      }
+      sendOK(id);
+      return;
+    } else {
+      sendERR(id,"Invalid ID format");
+      return;
+    }
+  }
 
-  
+  if (id.length() != 3 || !(isDigit(id.charAt(1)) && isDigit(id.charAt(2)))) {
+    sendERR(id,"Invalid ID format");
+    return;
+  }
+
+  char group = id.charAt(0);
+  int idx = (id.charAt(1) - '0') * 10 + (id.charAt(2) - '0');
+
+  if (group == 'S') {
+    if (idx < 0 || idx >= PocetSenzoru) { sendERR(id,"Not found"); return; }
+    if (SeznamSenzoru[idx]) SeznamSenzoru[idx]->reset();
+    sendOK(id);
+    return;
+  } else if (group == 'A') {
+    if (idx < 0 || idx >= PocetAktuatoru) { sendERR(id,"Not found"); return; }
+    if (SeznamAktuatoru[idx]) SeznamAktuatoru[idx]->reset();
+    sendOK(id);
+    return;
+  } else {
+    sendERR(id,"Invalid ID format");
+    return;
+  }
 }
-
 
 // Zpracuje UPDATE: zavolá registrovaný update handler a pošle data
 void VSCPDevice::handleUPDATE(const std::map<String,String>& kv) {
   auto itId = kv.find("id");
-  if (itId == kv.end()) { sendERR("", 400, "missing_id"); return; }
+  if (itId == kv.end()) { sendERR("","Missing ID"); return; }
   String id = itId->second.c_str();
 
   auto hit = updateHandlers.find(id);
-  if (hit == updateHandlers.end()) { sendERR(id, 404, "unknown_id"); return; }
+  if (hit == updateHandlers.end()) { sendERR(id,"Unknown ID"); return; }
 
 #if VSCP_REQUIRE_CONNECT
-  if (getPin(id) < 0) { sendERR(id, 409, "not_connected"); return; }
+  if (getPin(id) < 0) { sendERR(id,"Not connected"); return; }
 #endif
 
   int pin = getPin(id);
@@ -245,24 +279,24 @@ void VSCPDevice::handleUPDATE(const std::map<String,String>& kv) {
   try {
     data = hit->second(id, pin);
   } catch (...) {
-    sendERR(id, 500, "update_exception");
+    sendERR(id,"Update exception");
     return;
   }
 
-  if (data.empty()) { sendERR(id, 204, "no_content"); return; }
+  if (data.empty()) { sendERR(id,"No content"); return; }
   sendOK(id, data);
 }
 
 // Zpracuje CONFIG: vyextrahuje parametry a zavolá VSCP_OnConfig hook
 void VSCPDevice::handleCONFIG(const std::map<String,String>& kv) {
   auto itId = kv.find("id");
-  if (itId == kv.end()) { sendERR("", 400, "missing_id"); return; }
+  if (itId == kv.end()) { sendERR("","Missing ID"); return; }
   String id = itId->second.c_str();
 
 #if VSCP_REQUIRE_CONNECT
   // Vyžaduj CONNECT před CONFIG pro Sxx i Axx
   if (getPin(id) < 0) { 
-    sendERR(id, 409, "not_connected");
+    sendERR(id,"Not connected");
     return;
   }
 #endif
@@ -274,17 +308,17 @@ void VSCPDevice::handleCONFIG(const std::map<String,String>& kv) {
       continue;
     params[p.first] = p.second;
   }
-  if (params.empty()) { sendERR(id, 400, "missing_params"); return; }
+  if (params.empty()) { sendERR(id,"Missing params"); return; }
 
   bool ok = false;
   try {
     ok = VSCP_OnConfig(id, params);
   } catch (...) {
-    sendERR(id, 500, "config_exception"); 
+    sendERR(id,"Config exception"); 
     return;
   }
 
-  if (!ok) { sendERR(id, 422, "config_invalid"); return; }
+  if (!ok) { sendERR(id,"Invalid config"); return; }
   sendOK(id);
 }
 

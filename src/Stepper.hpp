@@ -2,7 +2,6 @@
 #include <Arduino.h>
 #include "actuator.hpp"
 
-// forward deklarace, aby se CheapStepper netahal do .hpp
 class CheapStepper;
 
 class Stepper : public Actuator {
