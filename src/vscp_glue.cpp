@@ -69,33 +69,6 @@ static void ds_setup(int pin) {
 }
 
 
-// Vrátí první řádek stringu včetně ošetření CR a LF
-static String firstLine(const String& s) {
-  int r = s.indexOf('\r');
-  int n = s.indexOf('\n');
-  int cut;
-  if (r < 0) cut = n; else if (n < 0) cut = r; else cut = (r < n ? r : n);
-  return (cut < 0) ? s : s.substring(0, cut);
-}
-
-
-// Parsuje query string do mapy klíč→hodnota
-static std::map<String,String> parseQuery(const String& q) {
-  std::map<String,String> kv;
-  int i = (q.length() && q[0]=='?') ? 1 : 0;
-  while (i < q.length()) {
-    int amp = q.indexOf('&', i); if (amp < 0) amp = q.length();
-    int eq  = q.indexOf('=', i);
-    if (eq > i && eq < amp) {
-      String k = q.substring(i, eq);
-      String v = q.substring(eq+1, amp);
-      kv[k] = v;
-    }
-    i = amp + 1;
-  }
-  return kv;
-}
-
 static vector<uint8_t> g_inited;
 
 
@@ -109,15 +82,6 @@ static std::vector<KV> collectFromSensor(int idx) {
   if (kv.empty()) { delay(50);  kv = SeznamSenzoru[idx]->update(); }
   if (kv.empty()) { delay(150); kv = SeznamSenzoru[idx]->update(); }
   return kv; 
-}
-
-
-// Vrátí index senzoru z ID ve formátu Sxx nebo -1 pokud nevalidní
-static int idToIndex_Sxx(const String& id) {
-  if (id.length() != 3) return -1;
-  if (id.charAt(0) != 'S') return -1;
-  if (!isDigit(id.charAt(1)) || !isDigit(id.charAt(2))) return -1;
-  return (id.charAt(1)-'0')*10 + (id.charAt(2)-'0');
 }
 
 

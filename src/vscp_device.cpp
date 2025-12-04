@@ -12,6 +12,24 @@ extern int PocetSenzoru;
 extern Actuator* SeznamAktuatoru[];
 extern int PocetAktuatoru;
 
+// Odstraní neplatné znaky (ponechá jen tisknutelné ASCII 32-126), ořízne před '?' a trim
+static String ensureStartsWithQuestion(String s) {
+  // Strip non-printable chars (keep only ASCII 32-126)
+  String out;
+  out.reserve(s.length());
+  for (size_t i = 0; i < s.length(); i++) {
+    char c = s[i];
+    if (c >= 32 && c <= 126) out += c;
+  }
+  out.trim();
+  
+  if (!out.length()) return String();
+  if (out.charAt(0) == '?') return out;
+  
+  int pos = out.indexOf('?');
+  return (pos >= 0) ? out.substring(pos) : String();
+}
+
 // Rozparsuje řetězec s piny (oddělené čárkami)
 static std::vector<int> parsePinsList(String pinsRaw) {
   std::vector<int> pins;
@@ -53,12 +71,20 @@ String VSCPDevice::readLineNonBlocking() {
   while (VSCP_STREAM.available()) {
     int b = VSCP_STREAM.read();
     if (b < 0) break;
-    char c = (char)b;
 
-    if (b == 10 || b == 13) {
-      if (buf.length()) { String out = buf; buf = ""; return out; }
+    // Akceptuj LF/CR/NUL jako terminátory
+    if (b == 10 || b == 13 || b == 0) {
+      if (buf.length()) {
+        String out = buf;
+        buf = "";
+        out = ensureStartsWithQuestion(out);
+        if (out.length()) {
+          //Serial.write(out.c_str());
+          return out;}
+        // jinak ignoruj a pokračuj
+      }
     } else {
-      buf += c;
+      buf += (char)b;
     }
   }
   return String();
@@ -321,4 +347,3 @@ void VSCPDevice::handleCONFIG(const std::map<String,String>& kv) {
   if (!ok) { sendERR(id,"Invalid config"); return; }
   sendOK(id);
 }
-

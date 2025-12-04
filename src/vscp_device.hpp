@@ -10,7 +10,7 @@
 
 // VSCP API verze
 #ifndef VSCP_API_VERSION
-#define VSCP_API_VERSION "1.0"
+#define VSCP_API_VERSION "1.2"
 #endif
 
 #ifndef VSCP_REQUIRE_CONNECT

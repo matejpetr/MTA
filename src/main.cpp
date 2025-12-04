@@ -2,7 +2,7 @@
 #include "GVL.hpp"
 #include <HardwareSerial.h>
 #include "vscp_port.hpp"  
-
+#include "vscp_device.hpp"
 extern "C" void VSCP_SetupRegisterAll();
 extern "C" void VSCP_Poll();
 
@@ -73,7 +73,10 @@ void setup()
   VSCP_STREAM.begin(VSCP_BAUD, SERIAL_8N1, VSCP_RX_PIN, VSCP_TX_PIN);
  
   delay(200);
-  VSCP_STREAM.println("DBG: VSCP po Serial1");
+  VSCP_STREAM.println("DBG: VSCP po UART2");
+  Serial.begin(115200);
+  delay(100);
+  Serial.write("DBG: VSCP po UART2");
 #else // USB Serial
   
   VSCP_STREAM.begin(VSCP_BAUD);
@@ -82,7 +85,10 @@ void setup()
 #endif
 
   VSCP_SetupRegisterAll();
-  VSCP_STREAM.setTimeout(0);
+  VSCP_STREAM.setTimeout(100);
+
+
+
 }
 
 
