@@ -26,11 +26,11 @@ public:
   int  getPin(const String& id) const;
   void poll();
 
-  static void sendOK(const String& id, const std::vector<KV>& kvs = std::vector<KV>());
-  static void sendERR(const String& id,const String& msg);
+  void sendOK(const String& id, const std::vector<KV>& kvs = std::vector<KV>());
+  void sendERR(const String& id,const String& msg);
   //static void sendERR(const String& id, int code, const String& msg);
 private:
-  String readLineNonBlocking();
+  String readLineNonBlocking(Stream* stream);
   static std::map<String,String> parseQuery(const String& q);
   void handleRequest(const String& line);
 
@@ -43,4 +43,5 @@ private:
 
   std::map<String, UpdateFn> updateHandlers; // id -> callback
   std::map<String, int>      idToPin;        // id -> pin
+  Stream* activeStream = nullptr;            // aktuální stream pro odpovědi
 };

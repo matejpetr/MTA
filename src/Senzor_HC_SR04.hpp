@@ -31,7 +31,7 @@ public:
       k.trim();
       k.toLowerCase();
       if      (k == "limit") _limit   = params[i].value.toInt(); // max cm
-      else if (k == "delay") _delayMs = params[i].value.toInt(); // ms mezi pings
+      else if (k == "delay") _delayMs = params[i].value.toInt(); // prodleva v ms mezi jednotlivými měřeními
     }
   }
 

@@ -69,26 +69,21 @@ int PocetAktuatoru = sizeof(SeznamAktuatoru) / sizeof(SeznamAktuatoru[0]);
 // Setup funkce - start seriové linky 
 void setup()
 {
-  #if USE_HW_UART  //HW serial
-  VSCP_STREAM.begin(VSCP_BAUD, SERIAL_8N1, VSCP_RX_PIN, VSCP_TX_PIN);
- 
-  delay(200);
-  VSCP_STREAM.println("DBG: VSCP po UART2");
+  // 1) USB Serial pro debug
   Serial.begin(115200);
-  delay(100);
-  Serial.write("DBG: VSCP po UART2");
-#else // USB Serial
   
-  VSCP_STREAM.begin(VSCP_BAUD);
+  // Potlačení všech I2C error logů (volat hned po Serial.begin)
+  esp_log_level_set("*", ESP_LOG_ERROR);  // globálně jen ERROR a výš
+  esp_log_level_set("Wire", ESP_LOG_NONE);  // Wire úplně vypnout
+  delay(100);
+
+  // 2) HW UART2 pro VSCP protokol
+  VirtualUART2.begin(VSCP_BAUD, SERIAL_8N1, VSCP_RX_PIN, VSCP_TX_PIN);
   delay(200);
-  VSCP_STREAM.println("DBG: VSCP po USB Serial");
-#endif
 
   VSCP_SetupRegisterAll();
-  VSCP_STREAM.setTimeout(100);
-
-
-
+  Serial.setTimeout(100);
+  VirtualUART2.setTimeout(100);
 }
 
 

@@ -66,10 +66,13 @@ int VSCPDevice::getPin(const String& id) const {
 }
 
 // Čte zprávu ze sériového portu bez blokování, vrací jednu kompletní linku
-String VSCPDevice::readLineNonBlocking() {
-  static String buf;
-  while (VSCP_STREAM.available()) {
-    int b = VSCP_STREAM.read();
+String VSCPDevice::readLineNonBlocking(Stream* stream) {
+  static String buf_usb;
+  static String buf_hw;
+  String& buf = (stream == &Serial) ? buf_usb : buf_hw;
+  
+  while (stream->available()) {
+    int b = stream->read();
     if (b < 0) break;
 
     // Akceptuj LF/CR/NUL jako terminátory
@@ -109,28 +112,30 @@ std::map<String,String> VSCPDevice::parseQuery(const String& q) {
 
 // Odešle úspěšnou odpověď (status=1) s volitelnými páry k:v
 void VSCPDevice::sendOK(const String& id, const std::vector<KV>& kvs) {
+  if (!activeStream) return;
   if (id.length() > 0) {
-    VSCP_STREAM.print("?id="); VSCP_STREAM.print(id);
-    VSCP_STREAM.print("&status=1");
+    activeStream->print("?id="); activeStream->print(id);
+    activeStream->print("&status=1");
   } else {
-    VSCP_STREAM.print("?status=1");
+    activeStream->print("?status=1");
   }
   for (auto& p : kvs) {
-    VSCP_STREAM.print("&"); VSCP_STREAM.print(p.k); VSCP_STREAM.print("=");
-    VSCP_STREAM.print(p.v);
+    activeStream->print("&"); activeStream->print(p.k); activeStream->print("=");
+    activeStream->print(p.v);
   }
-  VSCP_STREAM.println();
+  activeStream->println();
 }
 
 // Odešle chybovou odpověď se stavovým kódem a textem chyby(volitelné-třeba sjednotit error msg)
 void VSCPDevice::sendERR(const String& id,const String& msg) {
+  if (!activeStream) return;
   if (id.length() > 0) {
-    VSCP_STREAM.print("?id="); VSCP_STREAM.print(id);
-    VSCP_STREAM.print("&status=0");
+    activeStream->print("?id="); activeStream->print(id);
+    activeStream->print("&status=0");
   } else {
-    VSCP_STREAM.print("?status=0");
+    activeStream->print("?status=0");
   }
-  VSCP_STREAM.print("&error="); VSCP_STREAM.print(msg);
+  activeStream->print("&error="); activeStream->print(msg);
 }
 
 // Zpracuje příchozí požadavek (line) a odkáže na konkrétní handler
@@ -152,11 +157,27 @@ void VSCPDevice::handleRequest(const String& line) {
   sendERR(id,"Unknown type");
 }
 
-// Pollovací smyčka: čte sériovou linku non-blocking a volá handler
+// Pollovací smyčka: čte obě sériové linky (USB + HW UART) non-blocking a volá handler
 void VSCPDevice::poll() {
-  String line = readLineNonBlocking();
-  if (!line.length()) return;
-  handleRequest(line);
+  // Zkus USB Serial
+  if (Serial.available()) {
+    activeStream = &Serial;
+    String line = readLineNonBlocking(&Serial);
+    if (line.length()) {
+      handleRequest(line);
+      return;
+    }
+  }
+  
+  // Zkus HW UART
+  if (VirtualUART2.available()) {
+    activeStream = &VirtualUART2;
+    String line = readLineNonBlocking(&VirtualUART2);
+    if (line.length()) {
+      handleRequest(line);
+      return;
+    }
+  }
 }
 
 // Inicializační handler: kontrola verze API a odpověď OK

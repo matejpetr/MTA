@@ -12,13 +12,13 @@ class BMP280 : public Sensor {
 public:
   // konstruktor, piny se používají především z attach
   BMP280(int sda = -1, int scl = -1)
-    : _sda(sda), _scl(scl), _os_temp(2), _os_press(16), _filter(4) {}
+    : _sda(sda), _scl(scl), _os_temp(8), _os_press(16), _filter(4) {}
 
   // přiřazení pinu přes attach, použije první dva piny (SDA, SCL)
   void attach(const std::vector<int>& pins) override {
     if (pins.size() >= 1) _sda = pins[0];
     if (pins.size() >= 2) _scl = pins[1];
-  }
+  } 
 
   // uvolnění I2C pinu a ukončení I2C rozhraní
   void detach() override {

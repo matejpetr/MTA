@@ -27,6 +27,14 @@ static tcs34725Gain_t mapGain_(int g) {
 
 bool TCS34725::init() {
   I2C.begin(_sda, _scl);
+  
+  // Před voláním tcs.begin() zkontroluj, zda zařízení odpovídá
+  I2C.beginTransmission(0x29);
+  uint8_t wireErr = I2C.endTransmission();
+  if (wireErr != 0) {
+    _tcsEnabled = false;
+    return false;  // zařízení není na sběrnici, neloguj chybu
+  }
 
   if (!tcs.begin(0x29, &I2C)) {
     _tcsEnabled = false;
@@ -37,8 +45,8 @@ bool TCS34725::init() {
   tcs.enable();
 
   _tcsEnabled = true;
-  _readyAtMs  = millis() + _itime + 5;  // ms
-  _blockFirst = true;                   // blokace prvního UPDATE po init
+  _readyAtMs  = millis() + _itime + 5;
+  _blockFirst = true;
 
   return true;
 }

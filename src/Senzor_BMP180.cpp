@@ -23,15 +23,18 @@ void BMP180::reset() {
 std::vector<KV> BMP180::update() {
   // čtení surového tlaku (Pa)
   const float pressure_raw = bmp180.readPressure();
-  float pressure = (pressure_raw + CAL_OFFSET * 100.0f) / 100.0f;
-
-  // gain
-  pressure *= _gain;
-
-  // výpočet nadmořské výšky
-  const float altitude = bmp180.readAltitude(pressure_raw + CAL_OFFSET * 100.0f);
+  
+  // aplikace kalibračního offsetu a gain faktoru (v Pa)
+  float pressure_pa = (pressure_raw + CAL_OFFSET * 100.0f) * _gain;
+  
+  // výpočet nadmořské výšky (vstup v Pa)
+  const float altitude = bmp180.readAltitude(pressure_pa);
+  
+  // převod tlaku na hPa pro výstup
+  float pressure_hpa = pressure_pa / 100.0f;
+  
   std::vector<KV> kv;
-  kv.push_back({"press",    String(pressure, 1)});   // hPa
-  kv.push_back({"altitude", String(altitude, 1)});   // m
+  kv.push_back({"press",    String(pressure_hpa, 1)});   // hPa
+  kv.push_back({"altitude", String(altitude, 1)});       // m
   return kv;
 }
