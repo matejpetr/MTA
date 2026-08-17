@@ -5,7 +5,7 @@
 // Třída Actuator
 class Actuator {
   public:
-    virtual void config(Param* params = nullptr, int count = 0) {}  
+    virtual void control(Param* params = nullptr, int count = 0) {}  
     virtual void reset() {} 
     virtual ~Actuator() {}
     virtual void init() {}

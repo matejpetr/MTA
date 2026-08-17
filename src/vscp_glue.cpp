@@ -241,7 +241,7 @@ bool VSCP_OnConfig(const String& id, const std::map<String,String>& params) {
         pvec.push_back(p);
       }
       if (!pvec.empty()) {
-        SeznamAktuatoru[idx]->config(pvec.data(), (int)pvec.size());
+        SeznamAktuatoru[idx]->control(pvec.data(), (int)pvec.size());
         return true;
       }
       return false;

@@ -2,7 +2,7 @@
 #include "BuzzA.hpp"
 
 
-void BuzzA_config(int pin, bool control){
+void BuzzA_control(int pin, bool control){
  digitalWrite(pin,control);
 }
 

@@ -58,7 +58,7 @@ void Stepper::init() {
   if (!_stp) ensureDriver_();
 }
 
-void Stepper::config(Param* params, int count) {
+void Stepper::control(Param* params, int count) {
   for (int i = 0; i < count; ++i) {
     String k = params[i].key;
     k.trim();

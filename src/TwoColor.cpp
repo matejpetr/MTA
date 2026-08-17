@@ -11,7 +11,7 @@ static inline int mapToPWM(int brig01_100) {
   return map(brig01_100, 0, 100, 0, 255);
 }
 
-void TwoColor_config(int pinRed, int pinGreen, char color, int Brightness) {
+void TwoColor_control(int pinRed, int pinGreen, char color, int Brightness) {
   s_pinR = pinRed;
   s_pinG = pinGreen;
 

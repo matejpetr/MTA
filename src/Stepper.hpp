@@ -15,7 +15,7 @@ public:
   void attach(const std::vector<int>& pins) override;
   void detach() override;
   void init() override;
-  void config(Param* params = nullptr, int count = 0) override;
+  void control(Param* params = nullptr, int count = 0) override;
   void reset() override;
 
 private:

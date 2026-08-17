@@ -4,7 +4,7 @@
 #include "actuator.hpp"
 
 
-void IRtx_config(int pin, uint32_t code);
+void IRtx_control(int pin, uint32_t code);
 void IRtx_reset(int pin);
 
 class IRtx : public Actuator {
@@ -12,14 +12,14 @@ public:
   IRtx(int pin, uint32_t code = 0x0)
     : _pin(pin), _code(code) {}
 
-  void config(Param* params = nullptr, int count = 0) override {
+  void control(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       String k = params[i].key;
       k.trim();
       k.toLowerCase();
       if (k == "code") {_code = parseHex32(params[i].value);}
     }
-    IRtx_config(_pin, _code);
+    IRtx_control(_pin, _code);
   }
 
   void reset() override {
@@ -32,7 +32,7 @@ public:
       _pin = pins[0];
       if (_pin >= 0) {
         pinMode(_pin, OUTPUT);
-        IRtx_config(_pin, _code);
+        IRtx_control(_pin, _code);
       }
     }
   }

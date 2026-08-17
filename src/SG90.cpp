@@ -31,7 +31,7 @@ static void control_(Servo &s, int start, int end, int speedMs) {
 }
 
 // konfigurace serva
-void SG90_config(int angle, int speed) {
+void SG90_control(int angle, int speed) {
   if (s_pin < 0) return;        
   angle = constrain(angle, 0, 180);
   int speedMs = speedToDelayMs_(speed);

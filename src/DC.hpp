@@ -3,7 +3,7 @@
 #include "actuator.hpp"
 #include <vector>
 
-void DC_config(int pin, int Speed, bool state);
+void DC_control(int pin, int Speed, bool state);
 void DC_reset();
 
 class DC : public Actuator {
@@ -11,20 +11,21 @@ public:
   DC(int pin, int Speed, bool state)
     : _pin(pin), _Speed(Speed), _state(state) {}
 
-  void config(Param* params = nullptr, int count = 0) override {
+  void control(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
-        String k = params[i].key;
-        k.trim();
-        k.toLowerCase();
-        if (k == "speed") _Speed = params[i].value.toInt();
-        else if (k == "state") {
-          String v = params[i].value;
-          v.trim();
-          v.toLowerCase();
-          _state = (v == "true" || v == "1" || v == "on");
+      String k = params[i].key;
+      k.trim();
+      k.toLowerCase();
+      if (k == "speed") {
+        _Speed = params[i].value.toInt();
+      } else if (k == "state") {
+        String v = params[i].value;
+        v.trim();
+        v.toLowerCase();
+        _state = (v == "true" || v == "1" || v == "on");
       }
     }
-    DC_config(_pin, _Speed, _state);
+    DC_control(_pin, _Speed, _state);
   }
 
   void reset() override { DC_reset(); }
@@ -35,7 +36,7 @@ public:
       _pin = pins[0];
       if (_pin >= 0) {
         pinMode(_pin, OUTPUT);
-        DC_config(_pin, _Speed, _state);
+        DC_control(_pin, _Speed, _state);
       }
     }
   }

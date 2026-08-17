@@ -3,7 +3,7 @@
 #include "actuator.hpp"
 
 void RGB_setPins(int pinR, int pinG, int pinB);
-void RGB_config(int BrigR, int BrigG, int BrigB);
+void RGB_control(int BrigR, int BrigG, int BrigB);
 void RGB_reset();
 
 class RGB : public Actuator {
@@ -28,7 +28,7 @@ public:
   }
 
   // konfigurační parametry 
-  void config(Param* params = nullptr, int count = 0) override {
+  void control(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       String k = params[i].key;
       k.trim();
@@ -37,7 +37,7 @@ public:
       else if (k == "brigg") _BrigG = params[i].value.toInt();
       else if (k == "brigb") _BrigB = params[i].value.toInt();
     }
-    RGB_config(_BrigR, _BrigG, _BrigB);
+    RGB_control(_BrigR, _BrigG, _BrigB);
   }
 
   void reset() override { RGB_reset(); }

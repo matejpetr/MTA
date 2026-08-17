@@ -5,7 +5,7 @@
 static int pwmPin = -1;
 static bool state = false;
 
-void DC_config(int pin, int Speed, bool state) {
+void DC_control(int pin, int Speed, bool state) {
   pwmPin = pin;
   state = state;    //on = true, off = false
 

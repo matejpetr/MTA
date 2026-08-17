@@ -2,7 +2,7 @@
 #include <Arduino.h>
 
 
-void Color7_config(int pin, bool control){
+void Color7_control(int pin, bool control){
     digitalWrite(pin, control);
 
 }

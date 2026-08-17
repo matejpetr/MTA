@@ -3,7 +3,7 @@
 #include "actuator.hpp"
 #include <vector>
 
-void Color7_config(int pin, bool control);
+void Color7_control(int pin, bool control);
 void Color7_reset(int pin);
 
 class Color7 : public Actuator {
@@ -13,12 +13,12 @@ public:
     : _pin(pin), _control(control) {
     if (_pin >= 0) {
       pinMode(_pin, OUTPUT);
-      Color7_config(_pin, _control);
+      Color7_control(_pin, _control);
     }
   }
 
   // Konfigurační parametry
-  void config(Param* params = nullptr, int count = 0) override {
+  void control(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       String k = params[i].key;
       k.trim();
@@ -30,7 +30,7 @@ public:
           _control = (v == "true" || v == "1" || v == "on");
       }
     }
-    Color7_config(_pin, _control);
+    Color7_control(_pin, _control);
   }
 
   void reset() override { Color7_reset(_pin); }
@@ -41,7 +41,7 @@ public:
       _pin = pins[0];
       if (_pin >= 0) {
         pinMode(_pin, OUTPUT);
-        Color7_config(_pin, _control);
+        Color7_control(_pin, _control);
       }
     }
   }

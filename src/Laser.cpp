@@ -8,7 +8,7 @@ void Laser_setPin(int pin) {
   s_pin = pin;
 }
 
-void Laser_config(bool control) {
+void Laser_control(bool control) {
   if (s_pin < 0) return;
   pinMode(s_pin, OUTPUT);
   digitalWrite(s_pin, control ? HIGH : LOW);

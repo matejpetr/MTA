@@ -3,7 +3,7 @@
 #include "actuator.hpp"
 
 void Laser_setPin(int pin);
-void Laser_config(bool control);
+void Laser_control(bool control);
 void Laser_reset();
 
 class Laser : public Actuator {
@@ -31,7 +31,7 @@ public:
     }
   }
 
-  void config(Param* params = nullptr, int count = 0) override {
+  void control(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       String k = params[i].key;
       k.trim();
@@ -43,7 +43,7 @@ public:
           _control = (v == "true" || v == "1" || v == "on");
       }
     }
-    Laser_config(_control);
+    Laser_control(_control);
   }
 
   void reset() override { Laser_reset(); }

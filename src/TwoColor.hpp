@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include "actuator.hpp"  
 
-void TwoColor_config(int pinRed, int pinGreen, char color, int Brightness);
+void TwoColor_control(int pinRed, int pinGreen, char color, int Brightness);
 void TwoColor_reset();
 
 class TwoColor : public Actuator {
@@ -17,7 +17,7 @@ public:
   }
 
   // konfigurační parametry
-  void config(Param* params = nullptr, int count = 0) override {
+  void control(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       String k = params[i].key;
       k.trim();
@@ -25,7 +25,7 @@ public:
       if      (k == "color") _color = params[i].value.charAt(0);
       else if (k == "brig")  _Brightness = params[i].value.toInt();
     }
-    TwoColor_config(_pinRed, _pinGreen, _color, _Brightness);
+    TwoColor_control(_pinRed, _pinGreen, _color, _Brightness);
   }
 
   void reset() override { TwoColor_reset(); }

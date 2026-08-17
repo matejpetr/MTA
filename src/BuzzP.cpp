@@ -3,7 +3,7 @@
 
 static inline int chForPin(int pin) { return (pin & 0x07); }
 
-void BuzzP_config(int pin, int freq, int duration){
+void BuzzP_control(int pin, int freq, int duration){
  tone(pin,freq,duration);
 }
 

@@ -18,7 +18,7 @@ void TwoColorMini_setPins(int pinRed, int pinGreen) {
   s_pinG = pinGreen;
 }
 
-void TwoColorMini_config(char color, int Brightness) {
+void TwoColorMini_control(char color, int Brightness) {
 
   if (s_pinR < 0 && s_pinG < 0) return;
   if (s_pinR >= 0) pinMode(s_pinR, OUTPUT);

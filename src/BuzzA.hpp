@@ -3,7 +3,7 @@
 #include "actuator.hpp"
 
 
-void BuzzA_config(int pin, bool control);
+void BuzzA_control(int pin, bool control);
 void BuzzA_reset(int pin);
 
 class BuzzA : public Actuator {
@@ -30,7 +30,7 @@ public:
   }
   }
 
-  void config(Param* params = nullptr, int count = 0) override {
+  void control(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
         String k = params[i].key;
         k.trim();
@@ -42,7 +42,7 @@ public:
           _control = (v == "true" || v == "1" || v == "on");
       }
     }
-    BuzzA_config(_pin, _control);
+    BuzzA_control(_pin, _control);
   }
 
   void reset() override { BuzzA_reset(_pin); }

@@ -19,7 +19,7 @@ static void ensureIrSend(int pin) {
   }
 }
 
-void IRtx_config(int pin, uint32_t code) {
+void IRtx_control(int pin, uint32_t code) {
   ensureIrSend(pin);
   if (s_irsend) {
     s_irsend->sendNEC(code, 32);  

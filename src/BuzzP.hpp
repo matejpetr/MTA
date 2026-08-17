@@ -3,7 +3,7 @@
 #include "actuator.hpp"
 
 
-void BuzzP_config(int pin, int freq, int duration);
+void BuzzP_control(int pin, int freq, int duration);
 void BuzzP_reset(int pin);
 
 class BuzzP : public Actuator {
@@ -25,7 +25,7 @@ public:
   }
   }
 
-  void config(Param* params = nullptr, int count = 0) override {
+  void control(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       String k = params[i].key;
       k.trim();
@@ -33,7 +33,7 @@ public:
       if (k == "freq") _freq = params[i].value.toInt();
       else if (k == "duration") _duration = params[i].value.toInt();
     }
-    BuzzP_config(_pin, _freq, _duration);
+    BuzzP_control(_pin, _freq, _duration);
   }
 
   void reset() override { BuzzP_reset(_pin); }

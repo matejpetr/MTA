@@ -16,7 +16,7 @@ void RGB_setPins(int pinR, int pinG, int pinB) {
 
 static inline int clamp100(int v) { return v < 0 ? 0 : (v > 100 ? 100 : v); }
 
-void RGB_config(int BrigR, int BrigG, int BrigB) {
+void RGB_control(int BrigR, int BrigG, int BrigB) {
   if (s_pinR < 0 && s_pinG < 0 && s_pinB < 0) return;
 
   BrigR = clamp100(BrigR);

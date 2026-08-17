@@ -149,7 +149,7 @@ void VSCPDevice::handleRequest(const String& line) {
   if (type == "CONNECT")     { handleCONNECT(kv); return; }
   if (type == "DISCONNECT")  { handleDISCONNECT(kv); return; }
   if (type == "UPDATE")      { handleUPDATE(kv); return; }
-  if (type == "CONFIG")      { handleCONFIG(kv); return; } 
+  if (type == "CONFIG" || type == "CONTROL") { handleCONFIG(kv); return; }
   if (type == "RESET")       { handleRESET(kv); return; } 
 
   auto itId = kv.find("id");

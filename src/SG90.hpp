@@ -5,7 +5,7 @@
 
 
 void SG90_setPin(int pin);           
-void SG90_config(int angle, int speed); 
+void SG90_control(int angle, int speed); 
 
 class SG90 : public Actuator {
 public:
@@ -13,7 +13,7 @@ public:
     : _pin(pin), _angle(angle), _speed(speed) {}
 
   
-  void config(Param* params = nullptr, int count = 0) override {
+  void control(Param* params = nullptr, int count = 0) override {
     for (int i = 0; i < count; ++i) {
       String k = params[i].key;
       k.trim();
