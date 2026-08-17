@@ -1,3 +1,4 @@
+
 #include "Senzor_IRrx.hpp"
 
 #include <IRremoteESP8266.h>
@@ -93,3 +94,6 @@ std::vector<KV> IRrx::update() {
   const uint32_t v = _latestVal;
   return { {"code", toHex10_(v)} };
 }
+
+
+  
